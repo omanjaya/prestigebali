@@ -16,7 +16,7 @@ export default async function BookingPage({
   params: Promise<{ carModelId: string }>;
 }) {
   const { carModelId } = await params;
-  const car = getCarModel(carModelId);
+  const car = await getCarModel(carModelId);
   if (!car) notFound();
 
   return (

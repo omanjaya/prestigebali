@@ -1,7 +1,7 @@
-// Halaman Status Booking (Server Component). Menampilkan proyeksi BookingView (mock)
-// beserta timeline/stepper status. Data masih contoh sampai DB & read-API tersambung.
+// Halaman Status Booking (Server Component). Menampilkan proyeksi BookingView
+// dari DB (Prisma) beserta timeline/stepper status.
 
-import { getBooking } from "@/lib/mock-bookings";
+import { getBooking } from "@/lib/bookings";
 import {
   formatIDR,
   formatWIB,
@@ -37,7 +37,7 @@ export default async function StatusPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const b = getBooking(id);
+  const b = await getBooking(id);
 
   if (!b) {
     return (
@@ -197,11 +197,6 @@ export default async function StatusPage({
             </button>
           </div>
         ) : null}
-
-        {/* Catatan mock */}
-        <p className="muted" style={{ margin: 0, fontSize: "0.85rem" }}>
-          Data ini masih contoh (mock) sampai DB &amp; read-API tersambung.
-        </p>
       </div>
     </Container>
   );

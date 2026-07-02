@@ -11,7 +11,8 @@ import {
 import { formatIDR, MODE_LABEL } from "@/ui/format";
 import { Container, Card, CardBody, CardMedia, Badge, ButtonLink } from "@/ui/primitives";
 
-const CATEGORIES = listCategories();
+// Selalu render dinamis: katalog dibaca langsung dari DB (Prisma).
+export const dynamic = "force-dynamic";
 
 /** Bangun querystring `?category=...&brand=...`, hanya sertakan nilai yang ada. */
 function buildHref(params: { category?: string; brand?: string }): string {
@@ -22,8 +23,8 @@ function buildHref(params: { category?: string; brand?: string }): string {
   return qs ? `/?${qs}` : "/";
 }
 
-function isCategory(value: string | undefined): value is Category {
-  return value !== undefined && (CATEGORIES as string[]).includes(value);
+function isCategory(value: string | undefined, categories: Category[]): value is Category {
+  return value !== undefined && (categories as string[]).includes(value);
 }
 
 export default async function Page({
@@ -33,12 +34,14 @@ export default async function Page({
 }) {
   const { category: rawCategory, brand: rawBrand } = await searchParams;
 
+  const categories = await listCategories();
+  const brands = await listBrands();
+
   // Hanya kategori valid yang dipakai sebagai filter; sisanya diabaikan.
-  const activeCategory = isCategory(rawCategory) ? rawCategory : undefined;
-  const brands = listBrands();
+  const activeCategory = isCategory(rawCategory, categories) ? rawCategory : undefined;
   const activeBrand = rawBrand && brands.includes(rawBrand) ? rawBrand : undefined;
 
-  const cars = listCarModels({ category: activeCategory, brand: activeBrand });
+  const cars = await listCarModels({ category: activeCategory, brand: activeBrand });
 
   return (
     <Container>
@@ -66,7 +69,7 @@ export default async function Page({
               label="Semua"
               active={!activeCategory}
             />
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <FilterChip
                 key={cat}
                 href={buildHref({ category: cat, brand: activeBrand })}

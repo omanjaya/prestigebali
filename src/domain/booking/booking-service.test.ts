@@ -373,6 +373,113 @@ describe("settle (Pelunasan)", () => {
   });
 });
 
+describe("Notifikasi (ADR-0003)", () => {
+  it("createBooking mengirim BOOKING_REQUESTED ke ADMIN dengan bookingId", async () => {
+    const booking = await createChauffeurBooking();
+
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "BOOKING_REQUESTED",
+        recipientRole: "ADMIN",
+        bookingId: booking.id,
+      }),
+    );
+  });
+
+  it("payDp Pakai Sopir: PAYMENT_RECEIVED ke ADMIN + BOOKING_CONFIRMED ke CUSTOMER", async () => {
+    const booking = await createChauffeurBooking();
+    notifications.sent.length = 0; // abaikan notifikasi createBooking
+
+    await service.payDp({ bookingId: booking.id, gatewayRef: "dp-1", amount: DP });
+
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "PAYMENT_RECEIVED",
+        recipientRole: "ADMIN",
+        bookingId: booking.id,
+      }),
+    );
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "BOOKING_CONFIRMED",
+        recipientRole: "CUSTOMER",
+        bookingId: booking.id,
+      }),
+    );
+    expect(notifications.sent).toHaveLength(2);
+  });
+
+  it("payDp Lepas Kunci: PAYMENT_RECEIVED + AWAITING_APPROVAL ke ADMIN (belum CONFIRMED)", async () => {
+    fleet.setStock("car-1", 1);
+    const booking = await service.createBooking({
+      carModelId: "car-1",
+      customerId: "cust-1",
+      mode: "SELF_DRIVE",
+      period: PERIOD,
+    });
+    notifications.sent.length = 0;
+
+    await service.payDp({ bookingId: booking.id, gatewayRef: "dp-2", amount: DP });
+
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "PAYMENT_RECEIVED",
+        recipientRole: "ADMIN",
+        bookingId: booking.id,
+      }),
+    );
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "AWAITING_APPROVAL",
+        recipientRole: "ADMIN",
+        bookingId: booking.id,
+      }),
+    );
+    // Belum ada BOOKING_CONFIRMED — Lepas Kunci menunggu approve.
+    expect(
+      notifications.sent.filter((n) => n.event === "BOOKING_CONFIRMED"),
+    ).toHaveLength(0);
+  });
+
+  it("approve mengirim BOOKING_CONFIRMED ke CUSTOMER", async () => {
+    fleet.setStock("car-1", 1);
+    const booking = await service.createBooking({
+      carModelId: "car-1",
+      customerId: "cust-1",
+      mode: "SELF_DRIVE",
+      period: PERIOD,
+    });
+    await service.payDp({ bookingId: booking.id, gatewayRef: "dp-3", amount: DP });
+    notifications.sent.length = 0;
+
+    await service.approve({ bookingId: booking.id });
+
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "BOOKING_CONFIRMED",
+        recipientRole: "CUSTOMER",
+        bookingId: booking.id,
+      }),
+    );
+  });
+
+  it("cancel mengirim BOOKING_CANCELLED ke CUSTOMER dengan refundAmount di payload", async () => {
+    const booking = await confirmedChauffeur(); // ≥H-7 → refund penuh (fee 0)
+    notifications.sent.length = 0;
+
+    await service.cancel({ bookingId: booking.id });
+
+    expect(notifications.sent).toContainEqual(
+      expect.objectContaining({
+        event: "BOOKING_CANCELLED",
+        recipientRole: "CUSTOMER",
+        bookingId: booking.id,
+        payload: expect.objectContaining({ refundAmount: DP }),
+      }),
+    );
+  });
+});
+
 describe("markOngoing / markCompleted", () => {
   it("CONFIRMED → ONGOING → COMPLETED", async () => {
     const booking = await confirmedChauffeur();

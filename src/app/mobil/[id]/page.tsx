@@ -1,5 +1,5 @@
 // Halaman Detail Mobil — Server Component (async). Bahasa Indonesia, tema luxury.
-// Data mock via getCarModel; foto belum ada → placeholder CardMedia.
+// Data via getCarModel (DB); foto belum ada → placeholder CardMedia.
 
 import { notFound } from "next/navigation";
 
@@ -16,7 +16,7 @@ import {
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const car = getCarModel(id);
+  const car = await getCarModel(id);
   if (!car) notFound();
 
   const specs: string[] = [

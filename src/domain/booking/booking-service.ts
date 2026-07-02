@@ -72,7 +72,7 @@ function wibCalendarDaysUntil(startAt: Date, now: Date): number {
 }
 
 export function createBookingService(deps: BookingServiceDeps): BookingService {
-  const { clock, repository, fleet, config, paymentGateway } = deps;
+  const { clock, repository, fleet, config, paymentGateway, notifications } = deps;
 
   /**
    * Apakah Mobil punya slot pada periode: Stok ada dan (aktif + Hold) < Stok (ADR-0004).
@@ -116,6 +116,12 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
         createdAt: now,
       };
       await repository.save(booking);
+      // Notifikasi (ADR-0003): admin harus tahu ada Permintaan baru.
+      await notifications.send({
+        event: "BOOKING_REQUESTED",
+        recipientRole: "ADMIN",
+        bookingId: booking.id,
+      });
       return booking;
     },
     async payDp({ bookingId, amount }) {
@@ -138,6 +144,25 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
         dpAmount: amount,
       };
       await repository.save(updated);
+      // Notifikasi (ADR-0003): admin tahu DP masuk; lalu event lanjutan sesuai state hasil.
+      await notifications.send({
+        event: "PAYMENT_RECEIVED",
+        recipientRole: "ADMIN",
+        bookingId: updated.id,
+      });
+      if (updated.status === "AWAITING_APPROVAL") {
+        await notifications.send({
+          event: "AWAITING_APPROVAL",
+          recipientRole: "ADMIN",
+          bookingId: updated.id,
+        });
+      } else {
+        await notifications.send({
+          event: "BOOKING_CONFIRMED",
+          recipientRole: "CUSTOMER",
+          bookingId: updated.id,
+        });
+      }
       return updated;
     },
     async approve({ bookingId }) {
@@ -150,6 +175,12 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
       }
       const updated: Booking = { ...booking, status: "CONFIRMED" };
       await repository.save(updated);
+      // Notifikasi (ADR-0003): pelanggan tahu Booking-nya dikonfirmasi.
+      await notifications.send({
+        event: "BOOKING_CONFIRMED",
+        recipientRole: "CUSTOMER",
+        bookingId: updated.id,
+      });
       return updated;
     },
     async settle({ bookingId, amount }) {
@@ -186,6 +217,13 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
       }
       const updated: Booking = { ...booking, status: "CANCELLED" };
       await repository.save(updated);
+      // Notifikasi (ADR-0003): sertakan refundAmount hasil tier agar pelanggan tahu nominalnya.
+      await notifications.send({
+        event: "BOOKING_CANCELLED",
+        recipientRole: "CUSTOMER",
+        bookingId: updated.id,
+        payload: { refundAmount },
+      });
       return updated;
     },
     async cancelByOperator({ bookingId }) {
@@ -203,6 +241,13 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
       }
       const updated: Booking = { ...booking, status: "CANCELLED" };
       await repository.save(updated);
+      // Notifikasi (ADR-0003): pembatalan oleh Prestige → refund penuh DP.
+      await notifications.send({
+        event: "BOOKING_CANCELLED",
+        recipientRole: "CUSTOMER",
+        bookingId: updated.id,
+        payload: { refundAmount: dp },
+      });
       return updated;
     },
     async reschedule({ bookingId, period }) {

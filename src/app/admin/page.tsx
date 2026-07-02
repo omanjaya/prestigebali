@@ -1,13 +1,16 @@
 // Panel Admin — ringkasan laporan + tabel Booking dengan aksi operator.
-// Server Component async: seluruh angka dihitung dari listBookings() (data MOCK,
-// belum ada DB). Aksi baris terhubung ke Server Actions di ./actions.ts.
+// Server Component async: seluruh angka dihitung dari listBookings() (data DB
+// via Prisma). Aksi baris terhubung ke Server Actions di ./actions.ts.
 
-import { listBookings } from "@/lib/mock-bookings";
-import type { BookingView } from "@/lib/mock-bookings";
+import { listBookings } from "@/lib/bookings";
+import type { BookingView } from "@/lib/bookings";
 import { Container, Card, CardBody, PageHeader } from "@/ui/primitives";
 import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL, statusBadgeClass } from "@/ui/format";
 import { approveBooking, cancelBooking, allocateUnit, signOutAction } from "./actions";
 import { auth } from "@/auth";
+
+// Selalu baca DB terbaru — jangan cache halaman admin.
+export const dynamic = "force-dynamic";
 
 /** Status yang dianggap "menghasilkan/menahan" pendapatan (bukan batal/kedaluwarsa). */
 function isRevenueBearing(b: BookingView): boolean {
@@ -29,7 +32,7 @@ function StatTile({ value, label }: { value: string; label: string }) {
 
 export default async function AdminPage() {
   const session = await auth();
-  const bookings = listBookings();
+  const bookings = await listBookings();
 
   // Pendapatan: DP + Pelunasan yang telah diterima, kecuali Booking batal/kedaluwarsa.
   const pendapatan = bookings
