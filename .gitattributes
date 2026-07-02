@@ -1,0 +1,18 @@
+# Normalize line endings: store text files with LF in the repo.
+# Working-tree checkout follows the platform (CRLF on Windows) automatically.
+* text=auto eol=lf
+
+# Explicitly binary files (never touch line endings)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+
+# Shell scripts must keep LF regardless of platform
+*.sh text eol=lf
