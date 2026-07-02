@@ -1,0 +1,23 @@
+# Lingkungan pengembangan lokal (ADR-0005: Docker lokal dulu).
+# Jalankan: docker compose up -d   (butuh Docker Desktop terpasang)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: prestige-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prestige
+      POSTGRES_PASSWORD: prestige
+      POSTGRES_DB: prestige
+    ports:
+      - "5432:5432"
+    volumes:
+      - prestige-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prestige -d prestige"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  prestige-db-data:

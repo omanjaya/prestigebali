@@ -43,3 +43,7 @@ lebih produktif untuk fase 1); auth terkelola (Clerk/Supabase — biaya/ketergan
 - Beberapa keputusan menyisakan celah yang harus diisi saat implementasi: vendor WhatsApp
   (ADR-0003), hosting produksi, dan detail skema Prisma.
 - Keputusan ini soal stack, bukan struktur folder/monorepo — tetapkan terpisah bila perlu.
+- **Prisma dipatok ke v6** (bukan v7). Prisma 7 menghapus pola `url` di schema dan mewajibkan
+  driver-adapter + `prisma.config.ts`; untuk skeleton yang stabil & banyak dokumentasi, v6
+  dipilih. Migrasi ke v7 ditunda sebagai pekerjaan tersendiri. Versi lain (Next 16, React 19,
+  TypeScript 6, Vitest 4) memakai rilis terbaru.

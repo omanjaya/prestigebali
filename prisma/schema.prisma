@@ -1,0 +1,190 @@
+// Skema Prisma untuk Prestige (ADR-0005: PostgreSQL + Prisma).
+// Istilah mengikuti CONTEXT.md. Uang disimpan sebagai Int rupiah (tanpa desimal).
+// Skema ini akan berkembang seiring implementasi TDD.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Aktor & akun ---
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  role      Role     @default(CUSTOMER)
+  name      String?
+  email     String?  @unique
+  phone     String?  @unique
+  createdAt DateTime @default(now())
+
+  bookings      Booking[]
+  conversations Conversation[]
+}
+
+// --- Armada ---
+
+enum Category {
+  SPORT
+  LUXURY_SEDAN
+  LUXURY_SUV
+  PREMIUM_MPV
+}
+
+/// Mobil (CarModel): entri katalog yang dibooking; ketersediaan dilacak di sini.
+model CarModel {
+  id                String   @id @default(cuid())
+  name              String
+  brand             String
+  year              Int
+  transmission      String
+  seats             Int
+  category          Category
+  photos            String[]
+  stock             Int      @default(1)
+  dailyRate         Int? // Tarif Harian (Lepas Kunci)
+  chauffeurPackage  Int? // Paket 12 Jam (Pakai Sopir)
+  createdAt         DateTime @default(now())
+
+  units    CarUnit[]
+  bookings Booking[]
+}
+
+/// Unit (CarUnit): mobil fisik; tidak dipilih pelanggan, dialokasikan admin.
+model CarUnit {
+  id         String   @id @default(cuid())
+  carModel   CarModel @relation(fields: [carModelId], references: [id])
+  carModelId String
+  plate      String   @unique
+  color      String
+  odometer   Int      @default(0)
+  condition  String?
+
+  allocations Booking[] @relation("AllocatedUnit")
+}
+
+// --- Booking ---
+
+enum RentalMode {
+  SELF_DRIVE
+  CHAUFFEUR
+}
+
+enum BookingStatus {
+  REQUESTED
+  AWAITING_APPROVAL
+  CONFIRMED
+  EXPIRED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum HandoverMethod {
+  PICKUP // Ambil Sendiri
+  DELIVERY // Diantar
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  carModel   CarModel      @relation(fields: [carModelId], references: [id])
+  carModelId String
+  customer   Account       @relation(fields: [customerId], references: [id])
+  customerId String
+  mode       RentalMode
+  status     BookingStatus @default(REQUESTED)
+
+  startAt DateTime
+  endAt   DateTime
+
+  // Serah-terima (Lepas Kunci)
+  handoverMethod HandoverMethod?
+  deliveryFee    Int?
+  pickupPoint    String? // Titik Jemput (Pakai Sopir)
+
+  // Alokasi Unit oleh admin (tidak memengaruhi perhitungan Stok)
+  allocatedUnit   CarUnit? @relation("AllocatedUnit", fields: [allocatedUnitId], references: [id])
+  allocatedUnitId String?
+
+  // Hold Stok sementara (ADR-0001)
+  holdExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments Payment[]
+
+  @@index([carModelId, startAt, endAt])
+  @@index([status])
+}
+
+// --- Pembayaran (ADR-0002 / Midtrans) ---
+
+enum PaymentKind {
+  DP
+  SETTLEMENT
+  REFUND
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  booking    Booking       @relation(fields: [bookingId], references: [id])
+  bookingId  String
+  kind       PaymentKind
+  amount     Int
+  status     PaymentStatus @default(PENDING)
+  gatewayRef String?       @unique // referensi transaksi Midtrans (idempotensi webhook)
+  createdAt  DateTime      @default(now())
+}
+
+// --- Chat & notifikasi ---
+
+model Conversation {
+  id         String   @id @default(cuid())
+  customer   Account  @relation(fields: [customerId], references: [id])
+  customerId String
+  bookingId  String? // opsional, terikat ke Booking bila relevan
+  createdAt  DateTime @default(now())
+
+  messages Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  senderRole     Role
+  body           String
+  createdAt      DateTime     @default(now())
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  WEB_PUSH
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  recipientRole Role
+  channel       NotificationChannel
+  event         String
+  payload       Json?
+  sentAt        DateTime?
+  createdAt     DateTime            @default(now())
+}
