@@ -52,18 +52,53 @@ const BEFORE_RUNNING: ReadonlySet<Booking["status"]> = new Set([
   "CONFIRMED",
 ]);
 
+/** Offset WIB (Asia/Jakarta, UTC+7) dalam milidetik. */
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/**
+ * Indeks hari kalender WIB dari sebuah instant (jumlah hari sejak epoch, dihitung pada zona
+ * Asia/Jakarta / UTC+7). Menggeser instant +7 jam lalu memotong ke tengah malam WIB.
+ */
+function wibDayIndex(instant: Date): number {
+  return Math.floor((instant.getTime() + WIB_OFFSET_MS) / 86_400_000);
+}
+
+/**
+ * Selisih HARI KALENDER WIB dari `now` ke `startAt` (ADR-0004): bandingkan tanggal kalender
+ * WIB, bukan selisih milidetik mentah, agar titik potong tier konsisten pada tengah malam WIB.
+ */
+function wibCalendarDaysUntil(startAt: Date, now: Date): number {
+  return wibDayIndex(startAt) - wibDayIndex(now);
+}
+
 export function createBookingService(deps: BookingServiceDeps): BookingService {
   const { clock, repository, fleet, config, paymentGateway } = deps;
+
+  /**
+   * Apakah Mobil punya slot pada periode: Stok ada dan (aktif + Hold) < Stok (ADR-0004).
+   * `excludeBookingId` mengecualikan Booking tertentu (dipakai reschedule agar tak menghitung
+   * dirinya). Satu-satunya sumber logika ketersediaan — dipakai create/check/reschedule.
+   */
+  async function isModelAvailable(
+    carModelId: string,
+    period: RentalPeriod,
+    excludeBookingId?: string,
+  ): Promise<boolean> {
+    const stock = await fleet.getStock(carModelId);
+    if (stock === null) return false;
+    const active = await repository.countActiveForModel({
+      carModelId,
+      period,
+      now: clock.now(),
+      excludeBookingId,
+    });
+    return active < stock;
+  }
+
   return {
     async createBooking(cmd) {
       const now = clock.now();
-      const stock = await fleet.getStock(cmd.carModelId);
-      const active = await repository.countActiveForModel({
-        carModelId: cmd.carModelId,
-        period: cmd.period,
-        now,
-      });
-      if (stock === null || active >= stock) {
+      if (!(await isModelAvailable(cmd.carModelId, cmd.period))) {
         throw new NoAvailabilityError(`Stok habis untuk Mobil ${cmd.carModelId}`);
       }
 
@@ -138,11 +173,9 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
         );
       }
       const dp = booking.dpAmount ?? 0;
-      // Tier refund berbasis jumlah hari ke tanggal mulai (ADR-0004):
+      // Tier refund berbasis jumlah HARI KALENDER WIB ke tanggal mulai (ADR-0004):
       // ≥H-7 penuh (−biaya admin) · H-3..H-6 50% · ≤H-2 hangus.
-      const days = Math.floor(
-        (booking.period.startAt.getTime() - clock.now().getTime()) / 86_400_000,
-      );
+      const days = wibCalendarDaysUntil(booking.period.startAt, clock.now());
       let refundAmount: number;
       if (days >= 7) refundAmount = Math.max(0, dp - config.refundAdminFee);
       else if (days >= 3) refundAmount = Math.floor(dp * 0.5);
@@ -182,14 +215,7 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
       }
       // Cek ulang Stok pada tanggal baru (ADR-0004), kecualikan Booking ini sendiri agar
       // periode baru yang beririsan dengan periode lamanya tidak menghitung dirinya.
-      const stock = await fleet.getStock(booking.carModelId);
-      const active = await repository.countActiveForModel({
-        carModelId: booking.carModelId,
-        period,
-        now: clock.now(),
-        excludeBookingId: booking.id,
-      });
-      if (stock === null || active >= stock) {
+      if (!(await isModelAvailable(booking.carModelId, period, booking.id))) {
         throw new NoAvailabilityError(`Stok habis pada periode baru untuk ${booking.carModelId}`);
       }
       const updated: Booking = { ...booking, period }; // DP terbawa (tidak hangus)
@@ -231,11 +257,7 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
       return expired;
     },
     async checkAvailability({ carModelId, period }) {
-      const now = clock.now();
-      const stock = await fleet.getStock(carModelId);
-      if (stock === null) return false;
-      const active = await repository.countActiveForModel({ carModelId, period, now });
-      return active < stock;
+      return isModelAvailable(carModelId, period);
     },
   };
 }

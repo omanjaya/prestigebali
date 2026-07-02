@@ -200,6 +200,29 @@ describe("cancel — refund tier (ADR-0004)", () => {
     expect(refunds()[0]?.amount).toBe(DP); // refundAdminFee = 0
   });
 
+  it("≥H-7 pakai batas hari kalender WIB (bukan selisih milidetik) di titik potong", async () => {
+    // startAt 2026-08-01 00:00 WIB (= 2026-07-31T17:00Z); cancel 2026-07-25 01:00 WIB (= 2026-07-24T18:00Z).
+    // Selisih 7 hari kalender WIB → tier penuh. Selisih milidetik lama = 6h23j → floor 6 → keliru 50%.
+    const period = {
+      startAt: new Date("2026-07-31T17:00:00.000Z"),
+      endAt: new Date("2026-08-02T17:00:00.000Z"),
+    };
+    fleet.setStock("car-1", 1);
+    const booking = await service.createBooking({
+      carModelId: "car-1",
+      customerId: "cust-1",
+      mode: "CHAUFFEUR",
+      period,
+    });
+    await service.payDp({ bookingId: booking.id, gatewayRef: "dp", amount: DP });
+
+    clock.set(new Date("2026-07-24T18:00:00.000Z"));
+    await service.cancel({ bookingId: booking.id });
+
+    expect(refunds()).toHaveLength(1);
+    expect(refunds()[0]?.amount).toBe(DP); // refundAdminFee = 0 → refund penuh, bukan 50%
+  });
+
   it("H-3 s/d H-6: refund 50%", async () => {
     const booking = await confirmedChauffeur();
     clock.set(new Date("2026-07-27T00:00:00.000Z")); // 5 hari sebelum mulai
