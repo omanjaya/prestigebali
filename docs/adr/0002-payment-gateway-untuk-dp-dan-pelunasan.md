@@ -23,5 +23,5 @@ auto — sehingga meniadakan manfaat ADR-0001.
 
 - Ada biaya per transaksi dan ketergantungan integrasi pada provider (lock-in).
 - Perlu endpoint webhook yang aman & idempoten untuk memicu perubahan state Booking.
-- Provider spesifik belum dipilih; keputusan ini hanya menetapkan *pakai gateway*, bukan
-  vendornya.
+- Provider spesifik: **Midtrans (Snap)** dipilih pada ADR-0005. Tetap di balik port
+  `PaymentGateway` sehingga bisa ditukar (mis. ke Xendit) bila perlu.

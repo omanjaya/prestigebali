@@ -190,8 +190,10 @@ Sebuah sistem booking online end-to-end untuk Prestige:
   perlu berbeda per Mode Sewa.
 - **Angka konfigurasi belum ditetapkan:** timeout Hold, jumlah hari Buffer, besaran biaya admin
   (tier ≥H-7), zona & tarif Biaya Antar, Batas Kilometer, tarif Overtime.
-- **Stack teknologi belum dipilih** (bahasa, framework, DB, provider gateway/WA). Seam & port
-  di PRD ini dirumuskan agnostik-stack; keputusan stack layak jadi ADR tersendiri saat diambil.
+- **Stack teknologi sudah dipilih** (ADR-0005): Next.js + TypeScript, PostgreSQL + Prisma
+  (di balik port `Repository`), Payment Gateway **Midtrans/Snap** (port `PaymentGateway`),
+  Auth.js/NextAuth, Docker lokal dulu (hosting produksi ditunda). **Vendor WhatsApp masih
+  ditunda** — Email + Web Push jalan lebih dulu di port `NotificationSender`.
 - **Layout domain docs** saat ini satu `CONTEXT.md` di root; setup menyebut *multi-context* —
   promosikan ke `CONTEXT-MAP.md` bila muncul batas context nyata (mis. Pembayaran/Chat).
 - Rujukan: `CONTEXT.md` (glossary 46 istilah), `docs/adr/0001`–`0004`.
