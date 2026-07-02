@@ -117,6 +117,10 @@ model Booking {
   // Hold Stok sementara (ADR-0001)
   holdExpiresAt DateTime?
 
+  // Nominal DP & Pelunasan yang diterima (Money = Int rupiah)
+  dpAmount         Int?
+  settlementAmount Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
