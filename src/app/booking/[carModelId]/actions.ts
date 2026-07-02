@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import type { HandoverMethod, RentalMode } from "@/domain/booking/booking";
 import type { CreateBookingCommand } from "@/domain/booking/booking-service";
 import { getBookingService } from "@/server/booking-container";
+import { resolveCustomerAccountId } from "@/server/customer-account";
 
 export interface CreateBookingState {
   error?: string;
@@ -60,18 +61,21 @@ export async function createBookingAction(
     pickupPoint = chauffeurPickup || undefined;
   }
 
-  const cmd: CreateBookingCommand = {
-    carModelId,
-    // TODO: auth + auto-account (guest) belum diwire — sementara pakai placeholder.
-    customerId: "guest",
-    mode,
-    period: { startAt: startDate, endAt: endDate },
-    handoverMethod,
-    pickupPoint,
-  };
-
   let bookingId: string;
   try {
+    // Akun guest dibuat otomatis di sini: upsert Account(role CUSTOMER) dari Nama/HP,
+    // lalu id-nya dipakai sebagai customerId Booking (menggantikan placeholder lama).
+    const customerId = await resolveCustomerAccountId({ name, phone });
+
+    const cmd: CreateBookingCommand = {
+      carModelId,
+      customerId,
+      mode,
+      period: { startAt: startDate, endAt: endDate },
+      handoverMethod,
+      pickupPoint,
+    };
+
     const booking = await getBookingService().createBooking(cmd);
     bookingId = booking.id;
   } catch {

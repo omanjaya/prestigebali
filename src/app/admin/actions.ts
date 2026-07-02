@@ -11,6 +11,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getBookingService } from "@/server/booking-container";
+import { signOut } from "@/auth";
+
+/** Keluar dari sesi admin lalu alihkan ke halaman /login. */
+export async function signOutAction(): Promise<void> {
+  await signOut({ redirectTo: "/login" });
+}
 
 /** Menyetujui Verifikasi Pengemudi (Lepas Kunci): AWAITING_APPROVAL → CONFIRMED. */
 export async function approveBooking(formData: FormData): Promise<void> {

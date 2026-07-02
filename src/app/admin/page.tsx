@@ -6,7 +6,8 @@ import { listBookings } from "@/lib/mock-bookings";
 import type { BookingView } from "@/lib/mock-bookings";
 import { Container, Card, CardBody, PageHeader } from "@/ui/primitives";
 import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL, statusBadgeClass } from "@/ui/format";
-import { approveBooking, cancelBooking, allocateUnit } from "./actions";
+import { approveBooking, cancelBooking, allocateUnit, signOutAction } from "./actions";
+import { auth } from "@/auth";
 
 /** Status yang dianggap "menghasilkan/menahan" pendapatan (bukan batal/kedaluwarsa). */
 function isRevenueBearing(b: BookingView): boolean {
@@ -27,6 +28,7 @@ function StatTile({ value, label }: { value: string; label: string }) {
 }
 
 export default async function AdminPage() {
+  const session = await auth();
   const bookings = listBookings();
 
   // Pendapatan: DP + Pelunasan yang telah diterima, kecuali Booking batal/kedaluwarsa.
@@ -50,7 +52,17 @@ export default async function AdminPage() {
 
   return (
     <Container style={{ paddingBottom: "3rem" }}>
-      <PageHeader title="Panel Admin" subtitle="Ringkasan laporan & pengelolaan Booking." />
+      <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+        <PageHeader title="Panel Admin" subtitle="Ringkasan laporan & pengelolaan Booking." />
+        <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
+          {session?.user?.email ? <span className="muted">{session.user.email}</span> : null}
+          <form action={signOutAction}>
+            <button type="submit" className="btn btn-ghost">
+              Keluar
+            </button>
+          </form>
+        </div>
+      </div>
 
       <div className="grid" style={{ marginBottom: "1.5rem" }}>
         <StatTile value={formatIDR(pendapatan)} label="Pendapatan" />
