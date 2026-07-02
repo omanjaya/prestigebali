@@ -45,6 +45,13 @@ export interface BookingService {
   checkAvailability(input: { carModelId: string; period: RentalPeriod }): Promise<boolean>;
 }
 
+/** Status "sebelum berjalan" — masih boleh dibatalkan atau di-reschedule. */
+const BEFORE_RUNNING: ReadonlySet<Booking["status"]> = new Set([
+  "REQUESTED",
+  "AWAITING_APPROVAL",
+  "CONFIRMED",
+]);
+
 export function createBookingService(deps: BookingServiceDeps): BookingService {
   const { clock, repository, fleet, config, paymentGateway } = deps;
   return {
@@ -79,6 +86,13 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
     async payDp({ bookingId, amount }) {
       const booking = await repository.findById(bookingId);
       if (!booking) throw new InvalidTransitionError(`Booking ${bookingId} tidak ditemukan`);
+      // Hanya sah dari REQUESTED — cegah revive EXPIRED/CANCELLED & regres CONFIRMED
+      // akibat webhook DP ganda (idempotensi minimal).
+      if (booking.status !== "REQUESTED") {
+        throw new InvalidTransitionError(
+          `payDp hanya sah dari REQUESTED, bukan ${booking.status}`,
+        );
+      }
       // Konfirmasi bergantung Mode Sewa (ADR-0001): Pakai Sopir auto-CONFIRMED;
       // Lepas Kunci menunggu persetujuan Verifikasi Pengemudi.
       const nextStatus = booking.mode === "CHAUFFEUR" ? "CONFIRMED" : "AWAITING_APPROVAL";
@@ -118,6 +132,11 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
     async cancel({ bookingId }) {
       const booking = await repository.findById(bookingId);
       if (!booking) throw new InvalidTransitionError(`Booking ${bookingId} tidak ditemukan`);
+      if (!BEFORE_RUNNING.has(booking.status)) {
+        throw new InvalidTransitionError(
+          `cancel hanya sah sebelum berjalan, bukan dari ${booking.status}`,
+        );
+      }
       const dp = booking.dpAmount ?? 0;
       // Tier refund berbasis jumlah hari ke tanggal mulai (ADR-0004):
       // ≥H-7 penuh (−biaya admin) · H-3..H-6 50% · ≤H-2 hangus.
@@ -125,7 +144,7 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
         (booking.period.startAt.getTime() - clock.now().getTime()) / 86_400_000,
       );
       let refundAmount: number;
-      if (days >= 7) refundAmount = dp - config.refundAdminFee;
+      if (days >= 7) refundAmount = Math.max(0, dp - config.refundAdminFee);
       else if (days >= 3) refundAmount = Math.floor(dp * 0.5);
       else refundAmount = 0;
 
@@ -139,6 +158,11 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
     async cancelByOperator({ bookingId }) {
       const booking = await repository.findById(bookingId);
       if (!booking) throw new InvalidTransitionError(`Booking ${bookingId} tidak ditemukan`);
+      if (!BEFORE_RUNNING.has(booking.status)) {
+        throw new InvalidTransitionError(
+          `cancelByOperator hanya sah sebelum berjalan, bukan dari ${booking.status}`,
+        );
+      }
       // Pembatalan oleh Prestige → refund penuh 100%, tanpa memandang H-berapa (ADR-0004).
       const dp = booking.dpAmount ?? 0;
       if (dp > 0) {
@@ -151,13 +175,19 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
     async reschedule({ bookingId, period }) {
       const booking = await repository.findById(bookingId);
       if (!booking) throw new InvalidTransitionError(`Booking ${bookingId} tidak ditemukan`);
-      // Cek ulang Stok pada tanggal baru (ADR-0004). Booking ini masih menempati periode
-      // lamanya di repo; jika periode baru tak beririsan dengan lama, ia tak menghitung dirinya.
+      if (!BEFORE_RUNNING.has(booking.status)) {
+        throw new InvalidTransitionError(
+          `reschedule hanya sah sebelum berjalan, bukan dari ${booking.status}`,
+        );
+      }
+      // Cek ulang Stok pada tanggal baru (ADR-0004), kecualikan Booking ini sendiri agar
+      // periode baru yang beririsan dengan periode lamanya tidak menghitung dirinya.
       const stock = await fleet.getStock(booking.carModelId);
       const active = await repository.countActiveForModel({
         carModelId: booking.carModelId,
         period,
         now: clock.now(),
+        excludeBookingId: booking.id,
       });
       if (stock === null || active >= stock) {
         throw new NoAvailabilityError(`Stok habis pada periode baru untuk ${booking.carModelId}`);

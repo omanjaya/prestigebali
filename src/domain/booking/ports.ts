@@ -47,6 +47,8 @@ export interface BookingRepository {
     carModelId: string;
     period: RentalPeriod;
     now: Date;
+    /** Abaikan Booking ini dari hitungan (mis. saat reschedule agar tak menghitung dirinya). */
+    excludeBookingId?: string;
   }): Promise<number>;
   /** Booking REQUESTED yang Hold-nya sudah kedaluwarsa pada `now` (untuk job sweep). */
   findExpiredHolds(now: Date): Promise<Booking[]>;

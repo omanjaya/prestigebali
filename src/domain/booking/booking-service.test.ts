@@ -122,6 +122,13 @@ describe("payDp", () => {
 
     expect(paid.status).toBe("AWAITING_APPROVAL");
   });
+
+  it("menolak payDp bila Booking bukan REQUESTED (cegah revive/regress)", async () => {
+    const booking = await confirmedChauffeur(); // sudah CONFIRMED
+    await expect(
+      service.payDp({ bookingId: booking.id, gatewayRef: "dup", amount: DP }),
+    ).rejects.toThrow(InvalidTransitionError);
+  });
 });
 
 describe("approve", () => {
@@ -211,6 +218,46 @@ describe("cancel — refund tier (ADR-0004)", () => {
     expect(cancelled.status).toBe("CANCELLED");
     expect(refunds()).toHaveLength(0);
   });
+
+  it("menolak cancel dua kali — tidak ada refund ganda", async () => {
+    const booking = await confirmedChauffeur(); // ≥H-7 → refund penuh sekali
+    await service.cancel({ bookingId: booking.id });
+
+    await expect(service.cancel({ bookingId: booking.id })).rejects.toThrow(InvalidTransitionError);
+    expect(refunds()).toHaveLength(1); // tetap satu refund
+  });
+
+  it("tidak pernah refund negatif walau biaya admin > DP (≥H-7)", async () => {
+    const svc = createBookingService({
+      clock,
+      paymentGateway: payments,
+      notifications,
+      repository,
+      fleet,
+      config: { holdTimeoutMinutes: 60, refundAdminFee: 5_000_000 }, // > DP (1jt)
+    });
+    fleet.setStock("car-1", 1);
+    const booking = await svc.createBooking({
+      carModelId: "car-1",
+      customerId: "c",
+      mode: "CHAUFFEUR",
+      period: PERIOD,
+    });
+    await svc.payDp({ bookingId: booking.id, gatewayRef: "d", amount: DP });
+
+    await svc.cancel({ bookingId: booking.id }); // dp − fee = negatif
+
+    expect(refunds()).toHaveLength(0); // tidak ada refund negatif
+  });
+
+  it("menolak cancel Booking yang sudah COMPLETED", async () => {
+    const booking = await confirmedChauffeur();
+    await service.markOngoing({ bookingId: booking.id });
+    await service.markCompleted({ bookingId: booking.id });
+
+    await expect(service.cancel({ bookingId: booking.id })).rejects.toThrow(InvalidTransitionError);
+    expect(refunds()).toHaveLength(0);
+  });
 });
 
 describe("cancelByOperator (ADR-0004)", () => {
@@ -223,6 +270,15 @@ describe("cancelByOperator (ADR-0004)", () => {
     expect(cancelled.status).toBe("CANCELLED");
     expect(refunds()).toHaveLength(1);
     expect(refunds()[0]?.amount).toBe(DP); // 100%, tanpa potong biaya admin
+  });
+
+  it("menolak cancelByOperator bila Booking sudah CANCELLED", async () => {
+    const booking = await confirmedChauffeur();
+    await service.cancel({ bookingId: booking.id });
+
+    await expect(
+      service.cancelByOperator({ bookingId: booking.id }),
+    ).rejects.toThrow(InvalidTransitionError);
   });
 });
 
@@ -252,6 +308,27 @@ describe("reschedule (ADR-0004)", () => {
     await expect(
       service.reschedule({ bookingId: booking.id, period: NEW_PERIOD }),
     ).rejects.toThrow(NoAvailabilityError);
+  });
+
+  it("boleh reschedule ke periode yang beririsan dengan periode lamanya sendiri", async () => {
+    const booking = await confirmedChauffeur(); // Agustus 1–3, Stok car-1 = 1
+    const overlap = {
+      startAt: new Date("2026-08-02T00:00:00.000Z"),
+      endAt: new Date("2026-08-04T00:00:00.000Z"),
+    };
+
+    const moved = await service.reschedule({ bookingId: booking.id, period: overlap });
+
+    expect(moved.period.startAt.toISOString()).toBe("2026-08-02T00:00:00.000Z");
+  });
+
+  it("menolak reschedule Booking yang sudah CANCELLED", async () => {
+    const booking = await confirmedChauffeur();
+    await service.cancel({ bookingId: booking.id });
+
+    await expect(
+      service.reschedule({ bookingId: booking.id, period: NEW_PERIOD }),
+    ).rejects.toThrow(InvalidTransitionError);
   });
 });
 

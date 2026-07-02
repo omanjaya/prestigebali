@@ -31,11 +31,13 @@ export class PrismaBookingRepository implements BookingRepository {
     carModelId: string;
     period: { startAt: Date; endAt: Date };
     now: Date;
+    excludeBookingId?: string;
   }): Promise<number> {
-    const { carModelId, period, now } = input;
+    const { carModelId, period, now, excludeBookingId } = input;
     return prisma.booking.count({
       where: {
         carModelId,
+        ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}),
         startAt: { lt: period.endAt },
         endAt: { gt: period.startAt },
         OR: [

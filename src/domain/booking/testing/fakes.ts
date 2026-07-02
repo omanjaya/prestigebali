@@ -99,10 +99,12 @@ export class InMemoryBookingRepository implements BookingRepository {
     carModelId: string;
     period: RentalPeriod;
     now: Date;
+    excludeBookingId?: string;
   }): Promise<number> {
     let count = 0;
     for (const b of this.store.values()) {
       if (b.carModelId !== input.carModelId) continue;
+      if (input.excludeBookingId !== undefined && b.id === input.excludeBookingId) continue;
       if (!overlaps(b.period, input.period)) continue;
       const heldStillActive =
         b.status === "REQUESTED" && b.holdExpiresAt !== undefined && b.holdExpiresAt > input.now;
