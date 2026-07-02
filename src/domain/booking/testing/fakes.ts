@@ -4,6 +4,7 @@
 import type { Booking, RentalPeriod } from "../booking";
 import type {
   BookingRepository,
+  CarModelReader,
   Clock,
   NotificationSender,
   PaymentGateway,
@@ -60,6 +61,16 @@ export class FakeNotificationSender implements NotificationSender {
   }
 }
 
+export class FakeCarModelReader implements CarModelReader {
+  private stockByModel = new Map<string, number>();
+  setStock(carModelId: string, stock: number): void {
+    this.stockByModel.set(carModelId, stock);
+  }
+  async getStock(carModelId: string): Promise<number | null> {
+    return this.stockByModel.get(carModelId) ?? null;
+  }
+}
+
 const ACTIVE: ReadonlySet<Booking["status"]> = new Set([
   "AWAITING_APPROVAL",
   "CONFIRMED",
@@ -98,5 +109,15 @@ export class InMemoryBookingRepository implements BookingRepository {
       if (ACTIVE.has(b.status) || heldStillActive) count += 1;
     }
     return count;
+  }
+
+  async findExpiredHolds(now: Date): Promise<Booking[]> {
+    const result: Booking[] = [];
+    for (const b of this.store.values()) {
+      if (b.status === "REQUESTED" && b.holdExpiresAt !== undefined && b.holdExpiresAt <= now) {
+        result.push({ ...b });
+      }
+    }
+    return result;
   }
 }

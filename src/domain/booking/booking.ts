@@ -38,5 +38,9 @@ export interface Booking {
   allocatedUnitId?: string;
   /** Kapan Hold Stok kedaluwarsa bila DP belum masuk (ADR-0001). */
   holdExpiresAt?: Date;
+  /** Nominal DP yang diterima (dasar perhitungan refund, ADR-0004). */
+  dpAmount?: Money;
+  /** Nominal Pelunasan yang diterima sebelum serah-terima. */
+  settlementAmount?: Money;
   createdAt: Date;
 }

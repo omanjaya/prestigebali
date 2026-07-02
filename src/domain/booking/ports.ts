@@ -48,6 +48,22 @@ export interface BookingRepository {
     period: RentalPeriod;
     now: Date;
   }): Promise<number>;
+  /** Booking REQUESTED yang Hold-nya sudah kedaluwarsa pada `now` (untuk job sweep). */
+  findExpiredHolds(now: Date): Promise<Booking[]>;
+}
+
+/** Baca data Mobil yang dibutuhkan logika Booking (mis. Stok). */
+export interface CarModelReader {
+  /** Jumlah Stok (total Unit) sebuah Mobil, atau null bila Mobil tidak ada. */
+  getStock(carModelId: string): Promise<number | null>;
+}
+
+/** Angka konfigurasi aturan bisnis (CONTEXT.md / ADR-0001, 0004). */
+export interface BookingServiceConfig {
+  /** Berapa menit Hold Stok bertahan sebelum kedaluwarsa. */
+  holdTimeoutMinutes: number;
+  /** Biaya admin yang dipotong dari refund penuh (tier ≥H-7, ADR-0004). */
+  refundAdminFee: Money;
 }
 
 export interface BookingServiceDeps {
@@ -55,4 +71,6 @@ export interface BookingServiceDeps {
   paymentGateway: PaymentGateway;
   notifications: NotificationSender;
   repository: BookingRepository;
+  fleet: CarModelReader;
+  config: BookingServiceConfig;
 }
