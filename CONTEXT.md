@@ -68,18 +68,15 @@ _Avoid_: jeda, cooldown, waktu istirahat.
 ### Booking
 
 **Booking** (`Booking`):
-Pemesanan satu Mobil oleh pelanggan untuk suatu periode sewa, opsional dengan Preferensi
-Warna. Mengurangi Stok Mobil, bukan Unit spesifik.
+Pemesanan satu Mobil (model) oleh pelanggan untuk suatu periode sewa. Mengurangi Stok Mobil,
+bukan Unit spesifik. Pelanggan **tidak memilih warna/unit** — lihat Alokasi.
 _Avoid_: reservasi, order, pesanan, transaksi.
-
-**Preferensi Warna** (`colorPreference`):
-Permintaan warna dari pelanggan pada sebuah Booking. Bersifat _best-effort_ dan **tidak
-dijamin** — hanya catatan untuk admin saat mengalokasikan Unit.
-_Avoid_: pilihan warna, warna wajib.
 
 **Alokasi** (`allocation`):
 Tindakan admin menetapkan Unit fisik tertentu ke sebuah Booking, biasanya menjelang
 hari-H. Sampai Alokasi terjadi, sebuah Booking hanya terikat ke Mobil (model), bukan Unit.
+Pelanggan tidak menentukan warna/unit; admin mengalokasikan Unit yang tersedia (pilihan
+warna oleh pelanggan sengaja **tidak** ada di fase 1 karena stok & warna terbatas).
 _Avoid_: assignment, penunjukan.
 
 ### Mode sewa
