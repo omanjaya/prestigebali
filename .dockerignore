@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.env.*
+*.log
+.claude
+.agents
+.scratch
+docs
+README.md
+AGENTS.md
+CONTEXT.md
+skills-lock.json

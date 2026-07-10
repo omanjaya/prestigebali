@@ -1,6 +1,23 @@
-# Lingkungan pengembangan lokal (ADR-0005: Docker lokal dulu).
-# Jalankan: docker compose up -d   (butuh Docker Desktop terpasang)
+# Lingkungan lokal lengkap (ADR-0005): app + database dalam Docker.
+# Jalankan: docker compose up -d --build   →  app di http://localhost:3000
+# Untuk ngoding harian dengan hot-reload, tetap bisa: docker compose up -d db && npm run dev
 services:
+  app:
+    build: .
+    container_name: prestige-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Nilai rahasia dibaca dari .env (gitignored)…
+    env_file:
+      - .env
+    # …tapi DATABASE_URL dioverride: dari dalam container, Postgres bernama `db`, bukan localhost.
+    environment:
+      DATABASE_URL: "postgresql://prestige:prestige@db:5432/prestige?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16-alpine
     container_name: prestige-db
