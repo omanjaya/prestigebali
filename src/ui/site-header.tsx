@@ -36,12 +36,13 @@ export function SiteHeader() {
     <header className={`site-header${visible || open ? " is-visible" : ""}`}>
       <div className="container site-header-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
-          Prestige
+          <span className="brand-name">Prestige</span>
+          <span className="brand-loc">Bali</span>
         </Link>
 
         <nav className="site-nav site-nav--desktop">
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href}>
+            <Link key={l.href} href={l.href} className="nav-link">
               {l.label}
             </Link>
           ))}
