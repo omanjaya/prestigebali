@@ -1,5 +1,5 @@
-// Halaman Form Booking — Server Component.
-// Menampilkan ringkasan Mobil + tarif lalu merender form (Client Component).
+// Booking Form page — Server Component.
+// Shows the car summary + rates, then renders the form (Client Component).
 
 import { notFound } from "next/navigation";
 
@@ -22,8 +22,8 @@ export default async function BookingPage({
   return (
     <Container>
       <PageHeader
-        title="Buat Booking"
-        subtitle="Lengkapi detail sewa Anda. Tim Prestige akan menindaklanjuti setelah DP diterima."
+        title="Create Booking"
+        subtitle="Complete your rental details. The Prestige team will follow up once your deposit is received."
       />
 
       <div className="grid" style={{ gridTemplateColumns: "minmax(280px, 360px) 1fr", alignItems: "start" }}>
@@ -38,16 +38,16 @@ export default async function BookingPage({
               </div>
 
               <div className="muted" style={{ fontSize: "0.9rem" }}>
-                {car.transmission} · {car.seats} kursi · Stok {car.stock}
+                {car.transmission} · {car.seats} seats · {car.stock} in stock
               </div>
 
               <div className="stack" style={{ gap: "0.35rem", marginTop: "0.5rem" }}>
                 <div className="row" style={{ justifyContent: "space-between" }}>
-                  <span className="muted">{MODE_LABEL.SELF_DRIVE} (Tarif Harian)</span>
+                  <span className="muted">{MODE_LABEL.SELF_DRIVE} (Daily Rate)</span>
                   <strong>{car.dailyRate != null ? formatIDR(car.dailyRate) : "—"}</strong>
                 </div>
                 <div className="row" style={{ justifyContent: "space-between" }}>
-                  <span className="muted">{MODE_LABEL.CHAUFFEUR} (Paket 12 Jam)</span>
+                  <span className="muted">{MODE_LABEL.CHAUFFEUR} (12-Hour Package)</span>
                   <strong>
                     {car.chauffeurPackage != null ? formatIDR(car.chauffeurPackage) : "—"}
                   </strong>

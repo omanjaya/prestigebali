@@ -22,7 +22,7 @@ export async function loginAction(
   } catch (error) {
     // Kegagalan kredensial → tampilkan pesan.
     if (error instanceof AuthError) {
-      return { error: "Email atau password salah." };
+      return { error: "Invalid email or password." };
     }
     // Selain itu (termasuk NEXT_REDIRECT dari login sukses) → teruskan.
     throw error;

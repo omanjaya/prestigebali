@@ -14,16 +14,19 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!car) notFound();
 
   const specs: { label: string; value: string }[] = [
-    { label: "Transmisi", value: car.transmission },
-    { label: "Kapasitas", value: `${car.seats} kursi` },
-    { label: "Tahun", value: String(car.year) },
-    { label: "Ketersediaan", value: car.stock > 0 ? `${car.stock} unit` : "Stok habis" },
+    { label: "Transmission", value: car.transmission },
+    { label: "Capacity", value: `${car.seats} seats` },
+    { label: "Year", value: String(car.year) },
+    {
+      label: "Availability",
+      value: car.stock > 0 ? `${car.stock} unit${car.stock === 1 ? "" : "s"}` : "Out of stock",
+    },
   ];
 
   return (
     <Container style={{ padding: "2.5rem 0 1rem" }}>
       <ButtonLink href="/" variant="ghost">
-        <Icon name="chevron" size={15} style={{ transform: "rotate(180deg)" }} /> Etalase
+        <Icon name="chevron" size={15} style={{ transform: "rotate(180deg)" }} /> Collection
       </ButtonLink>
 
       <div
@@ -54,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div>
-            <span className="eyebrow">Spesifikasi</span>
+            <span className="eyebrow">Specifications</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem 1.5rem", marginTop: "0.9rem" }}>
               {specs.map((s) => (
                 <div key={s.label} style={{ borderTop: "1px solid var(--border)", paddingTop: "0.6rem" }}>
@@ -66,7 +69,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div>
-            <span className="eyebrow">Tarif</span>
+            <span className="eyebrow">Rates</span>
             <div className="stack" style={{ gap: "0.65rem", marginTop: "0.9rem" }}>
               {car.dailyRate != null ? (
                 <div className="row" style={{ justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: "0.65rem" }}>
@@ -76,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   </span>
                   <span>
                     <span className="price">{formatIDR(car.dailyRate)}</span>{" "}
-                    <span className="price-unit">/ hari</span>
+                    <span className="price-unit">/ day</span>
                   </span>
                 </div>
               ) : null}
@@ -88,25 +91,25 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   </span>
                   <span>
                     <span className="price">{formatIDR(car.chauffeurPackage)}</span>{" "}
-                    <span className="price-unit">/ 12 jam</span>
+                    <span className="price-unit">/ 12h</span>
                   </span>
                 </div>
               ) : null}
               {car.dailyRate == null && car.chauffeurPackage == null ? (
-                <span className="muted">Hubungi admin untuk informasi tarif.</span>
+                <span className="muted">Contact us for pricing.</span>
               ) : null}
             </div>
           </div>
 
           <div className="row">
             <ButtonLink href={`/booking/${car.id}`} variant="primary">
-              Booking sekarang <Icon name="arrow" size={16} />
+              Book now <Icon name="arrow" size={16} />
             </ButtonLink>
           </div>
 
           <p className="muted" style={{ margin: 0, fontSize: "0.82rem", display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
             <Icon name="shield" size={16} style={{ marginTop: "2px", flexShrink: 0 }} />
-            Warna dan unit spesifik dialokasikan oleh admin; pelanggan tidak memilih warna.
+            The specific colour and unit are assigned by our team; customers don&apos;t choose the colour.
           </p>
         </div>
       </div>

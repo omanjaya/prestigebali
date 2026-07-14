@@ -380,7 +380,8 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
   const reduce = useReducedMotion();
-  const [n, setN] = useState(reduce ? value : 0);
+  // SSR/fallback menampilkan nilai akhir (robust utk no-JS/crawler); count-up saat di-scroll.
+  const [n, setN] = useState(value);
 
   useEffect(() => {
     if (!inView || reduce) return;
@@ -391,12 +392,6 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
     });
     return () => controls.stop();
   }, [inView, value, reduce]);
-
-  // Jaring pengaman: bila observer/animasi tak jalan, tampilkan nilai akhir (jangan macet di 0).
-  useEffect(() => {
-    const t = setTimeout(() => setN((cur) => (cur === 0 ? value : cur)), 1800);
-    return () => clearTimeout(t);
-  }, [value]);
 
   return (
     <div ref={ref} className="stat-item">

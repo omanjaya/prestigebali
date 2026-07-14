@@ -45,13 +45,13 @@ export default async function StatusPage({
         <Card>
           <CardBody>
             <div className="stack">
-              <h1 style={{ margin: 0 }}>Booking tidak ditemukan</h1>
+              <h1 style={{ margin: 0 }}>Booking not found</h1>
               <p className="muted" style={{ margin: 0 }}>
-                Kode booking &ldquo;{id}&rdquo; tidak dikenali. Periksa kembali tautan Anda.
+                Booking code &ldquo;{id}&rdquo; was not recognized. Please double-check your link.
               </p>
               <div className="row">
                 <ButtonLink href="/" variant="primary">
-                  Kembali ke Beranda
+                  Back to Home
                 </ButtonLink>
               </div>
             </div>
@@ -77,7 +77,7 @@ export default async function StatusPage({
         {/* 2. Timeline / stepper */}
         <Card>
           <CardBody>
-            <h2 style={{ marginTop: 0 }}>Status Pesanan</h2>
+            <h2 style={{ marginTop: 0 }}>Order Status</h2>
             {isTerminal ? (
               <div className="stack" style={{ gap: "0.5rem" }}>
                 <div className="row">
@@ -85,8 +85,8 @@ export default async function StatusPage({
                 </div>
                 <p className="muted" style={{ margin: 0 }}>
                   {b.status === "EXPIRED"
-                    ? "Masa tunggu pembayaran habis, hold stok dilepas."
-                    : "Booking ini telah dibatalkan."}
+                    ? "The payment window has elapsed and the stock hold has been released."
+                    : "This booking has been cancelled."}
                 </p>
               </div>
             ) : (
@@ -126,7 +126,7 @@ export default async function StatusPage({
                         }}
                       >
                         {step.label}
-                        {current ? " · sekarang" : ""}
+                        {current ? " · now" : ""}
                       </span>
                     </li>
                   );
@@ -139,11 +139,11 @@ export default async function StatusPage({
         {/* 3. Detail booking */}
         <Card>
           <CardBody>
-            <h2 style={{ marginTop: 0 }}>Detail Booking</h2>
+            <h2 style={{ marginTop: 0 }}>Booking Details</h2>
             <table className="table">
               <tbody>
                 <tr>
-                  <th style={{ width: "40%" }}>Mobil</th>
+                  <th style={{ width: "40%" }}>Car</th>
                   <td>{b.carName}</td>
                 </tr>
                 <tr>
@@ -151,27 +151,27 @@ export default async function StatusPage({
                   <td>{MODE_LABEL[b.mode]}</td>
                 </tr>
                 <tr>
-                  <th>Periode</th>
+                  <th>Period</th>
                   <td>
                     {formatWIB(b.startAt)} – {formatWIB(b.endAt)}
                   </td>
                 </tr>
                 <tr>
-                  <th>Pelanggan</th>
+                  <th>Customer</th>
                   <td>
                     {b.customerName} · {b.customerPhone}
                   </td>
                 </tr>
                 <tr>
-                  <th>Unit dialokasikan</th>
-                  <td>{b.allocatedUnit ?? "belum dialokasikan"}</td>
+                  <th>Allocated unit</th>
+                  <td>{b.allocatedUnit ?? "not yet allocated"}</td>
                 </tr>
                 <tr>
-                  <th>DP</th>
+                  <th>Deposit</th>
                   <td>{b.dpAmount != null ? formatIDR(b.dpAmount) : "—"}</td>
                 </tr>
                 <tr>
-                  <th>Pelunasan</th>
+                  <th>Balance</th>
                   <td>
                     {b.settlementAmount != null ? formatIDR(b.settlementAmount) : "—"}
                   </td>
@@ -186,14 +186,14 @@ export default async function StatusPage({
           <div className="row">
             {/* TODO: wire ke pembayaran (Midtrans) */}
             <button type="button" className="btn btn-primary">
-              Bayar DP
+              Pay Deposit
             </button>
           </div>
         ) : b.status === "CONFIRMED" && b.settlementAmount == null ? (
           <div className="row">
             {/* TODO: wire ke pembayaran (Midtrans) */}
             <button type="button" className="btn btn-primary">
-              Bayar Pelunasan
+              Pay Balance
             </button>
           </div>
         ) : null}

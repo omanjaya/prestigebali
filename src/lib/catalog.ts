@@ -8,9 +8,9 @@ export type Category = PrismaCategory;
 
 export const CATEGORY_LABEL: Record<Category, string> = {
   SPORT: "Sport / Supercar",
-  LUXURY_SEDAN: "Sedan Mewah",
-  LUXURY_SUV: "SUV Mewah",
-  PREMIUM_MPV: "MPV Premium",
+  LUXURY_SEDAN: "Luxury Sedan",
+  LUXURY_SUV: "Luxury SUV",
+  PREMIUM_MPV: "Premium MPV",
 };
 
 export interface CarModelView {

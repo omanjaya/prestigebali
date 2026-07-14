@@ -1,7 +1,7 @@
 "use server";
 
-// Server Action untuk membuat Booking. Memetakan FormData → CreateBookingCommand,
-// memanggil BookingService, lalu redirect ke halaman status pada sukses.
+// Server Action to create a Booking. Maps FormData → CreateBookingCommand,
+// calls BookingService, then redirects to the status page on success.
 
 import { redirect } from "next/navigation";
 
@@ -28,43 +28,43 @@ export async function createBookingAction(
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
 
-  // Validasi ringan sisi server (form juga memakai `required`).
+  // Light server-side validation (the form also uses `required`).
   if (!carModelId || !mode || !startAt || !endAt) {
-    return { error: "Mohon lengkapi Mode Sewa dan Periode Sewa." };
+    return { error: "Please complete the rental mode and rental period." };
   }
   if (!name || !phone) {
-    return { error: "Mohon isi Nama dan No. HP." };
+    return { error: "Please provide your name and phone number." };
   }
 
   const startDate = new Date(startAt);
   const endDate = new Date(endAt);
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-    return { error: "Format tanggal tidak valid." };
+    return { error: "Invalid date format." };
   }
   if (endDate <= startDate) {
-    return { error: "Waktu selesai harus setelah waktu mulai." };
+    return { error: "The end time must be after the start time." };
   }
 
-  // Serah-terima hanya relevan untuk Lepas Kunci; titik jemput untuk Pakai Sopir.
+  // Handover applies only to Self-Drive; pickup point applies to Chauffeur.
   let handoverMethod: HandoverMethod | undefined;
   let pickupPoint: string | undefined;
   if (mode === "SELF_DRIVE") {
     handoverMethod = handoverMethodRaw === "DELIVERY" ? "DELIVERY" : "PICKUP";
     if (handoverMethod === "DELIVERY") {
       if (!deliveryAddress) {
-        return { error: "Mohon isi Alamat pengantaran untuk metode Diantar." };
+        return { error: "Please provide a delivery address for the Delivery method." };
       }
       pickupPoint = deliveryAddress;
     }
   } else {
-    // CHAUFFEUR: gunakan Titik Jemput sebagai pickupPoint bila diisi.
+    // CHAUFFEUR: use the Pickup Point as pickupPoint when provided.
     pickupPoint = chauffeurPickup || undefined;
   }
 
   let bookingId: string;
   try {
-    // Akun guest dibuat otomatis di sini: upsert Account(role CUSTOMER) dari Nama/HP,
-    // lalu id-nya dipakai sebagai customerId Booking (menggantikan placeholder lama).
+    // Guest account is auto-created here: upsert Account(role CUSTOMER) from name/phone,
+    // then its id is used as the Booking's customerId (replacing the old placeholder).
     const customerId = await resolveCustomerAccountId({ name, phone });
 
     const cmd: CreateBookingCommand = {
@@ -79,13 +79,13 @@ export async function createBookingAction(
     const booking = await getBookingService().createBooking(cmd);
     bookingId = booking.id;
   } catch {
-    // Kegagalan umum saat ini: database/Docker belum berjalan sehingga repositori gagal.
+    // Common failure right now: the database/Docker isn't running, so the repository fails.
     return {
       error:
-        "Gagal membuat booking. Kemungkinan Stok tidak tersedia, atau database belum berjalan (Docker/DB belum aktif). Silakan coba lagi.",
+        "Could not create the booking — the car may be unavailable, or the database isn't running yet (Docker/DB not active). Please try again.",
     };
   }
 
-  // redirect() melempar secara internal — harus di luar try/catch agar tidak tertangkap.
+  // redirect() throws internally — it must stay outside the try/catch so it isn't caught.
   redirect(`/status/${bookingId}`);
 }

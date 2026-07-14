@@ -56,38 +56,38 @@ export default async function AdminPage() {
   return (
     <Container style={{ paddingBottom: "3rem" }}>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-        <PageHeader title="Panel Admin" subtitle="Ringkasan laporan & pengelolaan Booking." />
+        <PageHeader title="Admin Panel" subtitle="Reporting overview & booking management." />
         <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
           {session?.user?.email ? <span className="muted">{session.user.email}</span> : null}
           <form action={signOutAction}>
             <button type="submit" className="btn btn-ghost">
-              Keluar
+              Sign out
             </button>
           </form>
         </div>
       </div>
 
       <div className="grid" style={{ marginBottom: "1.5rem" }}>
-        <StatTile value={formatIDR(pendapatan)} label="Pendapatan" />
-        <StatTile value={String(bookingAktif)} label="Booking aktif" />
-        <StatTile value={String(pembayaranTertunda)} label="Pembayaran Tertunda" />
-        <StatTile value={String(menungguPersetujuan)} label="Menunggu Persetujuan" />
+        <StatTile value={formatIDR(pendapatan)} label="Revenue" />
+        <StatTile value={String(bookingAktif)} label="Active Bookings" />
+        <StatTile value={String(pembayaranTertunda)} label="Outstanding Payments" />
+        <StatTile value={String(menungguPersetujuan)} label="Awaiting Approval" />
       </div>
 
       <Card>
         <CardBody>
-          <h2 style={{ marginTop: 0 }}>Daftar Booking</h2>
+          <h2 style={{ marginTop: 0 }}>Booking List</h2>
           <div style={{ overflowX: "auto" }}>
             <table className="table">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Mobil</th>
-                  <th>Pelanggan</th>
+                  <th>Car</th>
+                  <th>Customer</th>
                   <th>Mode</th>
-                  <th>Periode</th>
+                  <th>Period</th>
                   <th>Status</th>
-                  <th>Aksi</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,7 +111,7 @@ export default async function AdminPage() {
                           <form action={approveBooking}>
                             <input type="hidden" name="bookingId" value={b.id} />
                             <button type="submit" className="btn btn-primary">
-                              Setujui
+                              Approve
                             </button>
                           </form>
                         ) : null}
@@ -119,7 +119,7 @@ export default async function AdminPage() {
                           <form action={allocateUnit}>
                             <input type="hidden" name="bookingId" value={b.id} />
                             <button type="submit" className="btn">
-                              Alokasi Unit
+                              Allocate Unit
                             </button>
                           </form>
                         ) : null}
@@ -127,7 +127,7 @@ export default async function AdminPage() {
                           <form action={cancelBooking}>
                             <input type="hidden" name="bookingId" value={b.id} />
                             <button type="submit" className="btn btn-ghost">
-                              Batalkan
+                              Cancel
                             </button>
                           </form>
                         ) : null}

@@ -11,9 +11,9 @@ export function formatIDR(amount: number): string {
   }).format(amount);
 }
 
-/** Format tanggal ke zona WIB (Asia/Jakarta), mis. "1 Agu 2026, 08.00". */
+/** Format date/time in WIB (Asia/Jakarta), e.g. "1 Aug 2026, 08:00". */
 export function formatWIB(date: Date): string {
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Jakarta",
     dateStyle: "medium",
     timeStyle: "short",
@@ -21,25 +21,26 @@ export function formatWIB(date: Date): string {
 }
 
 export function formatDateWIB(date: Date): string {
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Jakarta",
     dateStyle: "medium",
   }).format(date);
 }
 
+/** UI labels are English; domain glossary (CONTEXT.md) stays Indonesian. */
 export const MODE_LABEL: Record<RentalMode, string> = {
-  SELF_DRIVE: "Lepas Kunci",
-  CHAUFFEUR: "Pakai Sopir",
+  SELF_DRIVE: "Self-Drive",
+  CHAUFFEUR: "Chauffeur",
 };
 
 export const STATUS_LABEL: Record<BookingStatus, string> = {
-  REQUESTED: "Permintaan",
-  AWAITING_APPROVAL: "Menunggu Persetujuan",
-  CONFIRMED: "Terkonfirmasi",
-  EXPIRED: "Kedaluwarsa",
-  ONGOING: "Berjalan",
-  COMPLETED: "Selesai",
-  CANCELLED: "Dibatalkan",
+  REQUESTED: "Requested",
+  AWAITING_APPROVAL: "Awaiting Approval",
+  CONFIRMED: "Confirmed",
+  EXPIRED: "Expired",
+  ONGOING: "Ongoing",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 /** Kelas badge yang sesuai untuk sebuah status (lihat globals.css). */

@@ -16,11 +16,11 @@ export default async function LoginPage() {
       <Card>
         <CardBody>
           <PageHeader
-            title="Masuk Admin"
-            subtitle="Area khusus pengelola. Masuk dengan akun admin Anda."
+            title="Admin Sign-in"
+            subtitle="Management-only area. Sign in with your admin account."
           />
           <p className="muted" style={{ marginTop: 0 }}>
-            Halaman ini hanya untuk administrator Prestige.
+            This page is for Prestige administrators only.
           </p>
           <LoginForm />
         </CardBody>

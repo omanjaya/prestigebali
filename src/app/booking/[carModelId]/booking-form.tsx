@@ -1,7 +1,7 @@
 "use client";
 
-// Form Booking — Client Component. Memakai useActionState (React 19) yang terikat
-// ke server action. Menampilkan field kondisional berdasarkan Mode Sewa terpilih.
+// Booking Form — Client Component. Uses useActionState (React 19) bound to the
+// server action. Shows conditional fields based on the selected Rental Mode.
 
 import { useActionState, useState } from "react";
 
@@ -16,7 +16,7 @@ const initialState: CreateBookingState = {};
 export function BookingForm({ carModelId }: { carModelId: string }) {
   const [state, formAction, isPending] = useActionState(createBookingAction, initialState);
 
-  // State lokal hanya untuk mengendalikan tampilan field kondisional.
+  // Local state only controls the display of conditional fields.
   const [mode, setMode] = useState<RentalMode>("SELF_DRIVE");
   const [handoverMethod, setHandoverMethod] = useState<HandoverMethod>("PICKUP");
 
@@ -24,7 +24,7 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
     <form action={formAction} className="stack">
       <input type="hidden" name="carModelId" value={carModelId} />
 
-      <Field label="Mode Sewa" htmlFor="mode">
+      <Field label="Rental Mode" htmlFor="mode">
         <select
           id="mode"
           name="mode"
@@ -39,12 +39,12 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
 
       <div className="row" style={{ gap: "1rem", alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <Field label="Tanggal & jam mulai" htmlFor="startAt">
+          <Field label="Start date & time" htmlFor="startAt">
             <input id="startAt" name="startAt" type="datetime-local" required />
           </Field>
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <Field label="Tanggal & jam selesai" htmlFor="endAt">
+          <Field label="End date & time" htmlFor="endAt">
             <input id="endAt" name="endAt" type="datetime-local" required />
           </Field>
         </div>
@@ -52,7 +52,7 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
 
       {mode === "SELF_DRIVE" ? (
         <>
-          <Field label="Metode Serah-Terima" htmlFor="handoverMethod">
+          <Field label="Handover Method" htmlFor="handoverMethod">
             <select
               id="handoverMethod"
               name="handoverMethod"
@@ -60,30 +60,30 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
               onChange={(e) => setHandoverMethod(e.target.value as HandoverMethod)}
               required
             >
-              <option value="PICKUP">Ambil Sendiri</option>
-              <option value="DELIVERY">Diantar</option>
+              <option value="PICKUP">Self Pickup</option>
+              <option value="DELIVERY">Delivery</option>
             </select>
           </Field>
 
           {handoverMethod === "DELIVERY" ? (
-            <Field label="Alamat pengantaran" htmlFor="deliveryAddress">
+            <Field label="Delivery address" htmlFor="deliveryAddress">
               <input
                 id="deliveryAddress"
                 name="deliveryAddress"
                 type="text"
-                placeholder="Alamat lengkap tujuan pengantaran"
+                placeholder="Full delivery destination address"
                 required
               />
             </Field>
           ) : null}
         </>
       ) : (
-        <Field label="Titik Jemput" htmlFor="chauffeurPickup">
+        <Field label="Pickup Point" htmlFor="chauffeurPickup">
           <input
             id="chauffeurPickup"
             name="chauffeurPickup"
             type="text"
-            placeholder="Lokasi penjemputan (hotel, bandara, alamat, dll.)"
+            placeholder="Pickup location (hotel, airport, address, etc.)"
             required
           />
         </Field>
@@ -91,12 +91,12 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
 
       <div className="row" style={{ gap: "1rem", alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <Field label="Nama" htmlFor="name">
-            <input id="name" name="name" type="text" placeholder="Nama lengkap" required />
+          <Field label="Name" htmlFor="name">
+            <input id="name" name="name" type="text" placeholder="Full name" required />
           </Field>
         </div>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <Field label="No. HP" htmlFor="phone">
+          <Field label="Phone" htmlFor="phone">
             <input id="phone" name="phone" type="tel" placeholder="08xxxxxxxxxx" required />
           </Field>
         </div>
@@ -110,7 +110,7 @@ export function BookingForm({ carModelId }: { carModelId: string }) {
 
       <div className="row">
         <button type="submit" className="btn btn-primary" disabled={isPending}>
-          {isPending ? "Memproses…" : "Buat Booking"}
+          {isPending ? "Processing…" : "Create Booking"}
         </button>
       </div>
     </form>
