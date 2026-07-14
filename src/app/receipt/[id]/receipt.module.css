@@ -1,0 +1,341 @@
+/* ============================================================================
+   Receipt / Kwitansi — an ivory "paper" invoice laid on the dark Noir desk.
+   On screen: warm paper card centered on the dark page.
+   On print: everything but the paper is hidden; paper fills the page cleanly.
+   ========================================================================== */
+
+/* Warm ink palette scoped to the paper (independent of the dark site tokens). */
+.page {
+  --ink: #1a1613;
+  --ink-soft: #5c5348;
+  --ink-faint: #8a8072;
+  --paper: #f6f1e7;
+  --paper-edge: #ece4d3;
+  --gold: #9c7c33;
+  --gold-soft: #b7924a;
+  --hair: #ddd2bd;
+
+  display: flex;
+  justify-content: center;
+  padding: clamp(2rem, 6vw, 5rem) var(--gutter);
+}
+
+/* ---- The paper ---- */
+.paper {
+  width: 100%;
+  max-width: 760px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--paper-edge);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 30px 70px -30px rgba(0, 0, 0, 0.65),
+    0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  padding: clamp(1.75rem, 5vw, 3.25rem);
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+
+/* Thin gold rule at the very top of the sheet */
+.paper::before {
+  content: "";
+  display: block;
+  height: 2px;
+  margin: calc(-1 * clamp(1.75rem, 5vw, 3.25rem)) calc(-1 * clamp(1.75rem, 5vw, 3.25rem))
+    clamp(1.75rem, 5vw, 3.25rem);
+  background: linear-gradient(to right, var(--gold), var(--gold-soft) 55%, transparent);
+}
+
+/* ---- Letterhead ---- */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--ink);
+}
+.brand span {
+  color: var(--gold);
+}
+.orgMeta {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  max-width: 260px;
+}
+.orgMeta span {
+  display: block;
+}
+
+.headRight {
+  text-align: right;
+  flex: 0 0 auto;
+}
+.docLabel {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 0.75rem;
+}
+.metaRow {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 0.15rem 0;
+}
+.metaRow b {
+  color: var(--ink);
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* Status chip */
+.chip {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.22rem 0.7rem;
+  border: 1px solid var(--gold-soft);
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ---- Hairline divider ---- */
+.rule {
+  height: 1px;
+  background: var(--hair);
+  border: 0;
+  margin: 2rem 0;
+}
+
+/* ---- Label blocks ---- */
+.blocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+}
+@media (max-width: 520px) {
+  .blocks {
+    grid-template-columns: 1fr;
+  }
+}
+.blockTitle {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.6rem;
+}
+.blockName {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin: 0;
+}
+.blockSub {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0.2rem 0 0;
+}
+
+/* Rental details as label/value rows */
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+}
+.detailRow dt {
+  color: var(--ink-faint);
+}
+.detailRow dd {
+  margin: 0;
+  text-align: right;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ---- Line items table ---- */
+.items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+.items th {
+  text-align: left;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0 0.75rem;
+  border-bottom: 1px solid var(--hair);
+}
+.items th.num,
+.items td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.items td {
+  padding: 0.7rem 0;
+  font-size: 0.92rem;
+  border-bottom: 1px solid var(--hair);
+  color: var(--ink);
+}
+.items .itemLabel {
+  color: var(--ink-soft);
+}
+.totalRow td {
+  border-bottom: none;
+  border-top: 2px solid var(--ink);
+  padding-top: 0.9rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+.totalRow .totalLabel {
+  letter-spacing: 0.04em;
+}
+
+.balanceNote {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* ---- Footer ---- */
+.foot {
+  margin-top: 2.25rem;
+  text-align: center;
+}
+.thanks {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+}
+.footContact {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin: 0 0 1.1rem;
+}
+.footContact a {
+  color: var(--gold);
+  border-bottom: 1px solid var(--gold-soft);
+}
+.terms {
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* ---- Print button (screen only) ---- */
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
+}
+.printBtn:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ---- "Not found" fallback card ---- */
+.missing {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+.missingLink {
+  color: var(--gold);
+  border-bottom: 1px solid var(--gold-soft);
+}
+
+/* ============================================================================
+   PRINT — isolate the paper. Hide the whole dark app shell; the ivory sheet
+   fills the sheet with real background colors.
+   ========================================================================== */
+@media print {
+  /* Force background/foreground colors to render on paper */
+  .page,
+  .paper {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide the dark site chrome + on-screen-only affordances */
+  :global(.site-header),
+  :global(.site-footer),
+  :global(.cursor-dot),
+  :global(.cursor-ring),
+  :global([aria-label="Chat with us on WhatsApp"]),
+  .actions {
+    display: none !important;
+  }
+
+  /* Kill the page's dark background & ambient grain so paper prints clean */
+  :global(body) {
+    background: #fff !important;
+  }
+  :global(body)::after {
+    display: none !important;
+  }
+
+  .page {
+    display: block;
+    padding: 0;
+  }
+
+  .paper {
+    max-width: none;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    /* Keep the ivory paper look on the printed sheet */
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .paper::before {
+    margin: 0 0 2rem;
+  }
+}

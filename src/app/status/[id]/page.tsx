@@ -371,6 +371,11 @@ export default async function StatusPage({
               Pay Balance
             </button>
           ) : null}
+          {b.dpAmount != null ? (
+            <a className="btn btn-ghost" href={`/receipt/${b.id}`}>
+              View receipt
+            </a>
+          ) : null}
           <a
             className="btn btn-ghost"
             href={waLink(

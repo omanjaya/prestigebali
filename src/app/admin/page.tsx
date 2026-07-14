@@ -98,6 +98,9 @@ export default async function AdminPage() {
               {session.user.email}
             </span>
           ) : null}
+          <Link href="/admin/reports" className="btn btn-sm">
+            Reports
+          </Link>
           <Link href="/admin/cars" className="btn btn-sm">
             Manage cars
           </Link>
@@ -196,6 +199,11 @@ export default async function AdminPage() {
                               Cancel
                             </button>
                           </form>
+                        ) : null}
+                        {b.dpAmount != null ? (
+                          <Link href={`/receipt/${b.id}`} className="btn btn-sm btn-ghost">
+                            Receipt
+                          </Link>
                         ) : null}
                       </div>
                     </td>
