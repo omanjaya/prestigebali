@@ -5,7 +5,8 @@ import "./landing.css";
 import { SiteHeader } from "@/ui/site-header";
 import { SmoothScroll } from "@/ui/smooth-scroll";
 import { CustomCursor } from "@/ui/custom-cursor";
-import Link from "next/link";
+import { SiteFooter } from "@/ui/site-footer";
+import { WhatsAppFab } from "@/ui/whatsapp-fab";
 
 // Warm Noir: Fraunces (serif display hangat/berkarakter) + Inter (body bersih).
 const display = Fraunces({
@@ -24,6 +25,13 @@ const body = Inter({
 export const metadata: Metadata = {
   title: "Prestige Bali — Luxury Car Rental",
   description: "Self-drive or chauffeur in Bali. A curated fleet of the world's finest cars.",
+  openGraph: {
+    title: "Prestige Bali — Luxury Car Rental",
+    description: "Self-drive or chauffeur in Bali. A curated fleet of the world's finest cars.",
+    siteName: "Prestige Bali",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -36,17 +44,8 @@ export default function RootLayout({
         <CustomCursor />
         <SiteHeader />
         <main>{children}</main>
-        <footer className="site-footer">
-          <div className="container site-footer-inner">
-            <span className="footer-brand">Prestige Bali</span>
-            <span className="muted footer-tag">
-              Luxury Car Rental · Bali · Self-Drive &amp; Chauffeur
-            </span>
-            <Link href="/admin" className="footer-admin muted">
-              Admin
-            </Link>
-          </div>
-        </footer>
+        <SiteFooter />
+        <WhatsAppFab />
       </body>
     </html>
   );

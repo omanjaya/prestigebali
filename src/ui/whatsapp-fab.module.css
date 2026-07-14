@@ -1,0 +1,138 @@
+/* Floating WhatsApp button — Warm Noir. Sits below the custom cursor (z 9999). */
+
+.fab {
+  position: fixed;
+  right: clamp(1rem, 4vw, 2rem);
+  bottom: clamp(1rem, 4vw, 2rem);
+  z-index: 60;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+
+  height: 56px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  background: var(--surface);
+  color: var(--text);
+
+  box-shadow:
+    0 10px 30px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  animation: fabEnter 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.4s both;
+}
+
+.fab:hover {
+  border-color: var(--accent);
+  box-shadow:
+    0 14px 36px -12px rgba(0, 0, 0, 0.75),
+    0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  transform: translateY(-2px);
+}
+
+.fab:focus-visible {
+  outline: 2px solid var(--accent-hi);
+  outline-offset: 3px;
+}
+
+/* Circular icon disc — always visible */
+.disc {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  color: var(--accent-hi);
+}
+
+.disc svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+/* Gentle pulse ring behind the disc */
+.pulse {
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  opacity: 0;
+  animation: fabPulse 2.8s ease-out infinite;
+  pointer-events: none;
+}
+
+/* "Chat with us" label — collapses on desktop until hover */
+.label {
+  display: inline-block;
+  white-space: nowrap;
+  max-width: 0;
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0;
+  transition:
+    max-width 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.3s ease,
+    padding 0.4s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fab:hover .label,
+  .fab:focus-visible .label {
+    max-width: 160px;
+    opacity: 1;
+    padding-right: 1.15rem;
+  }
+}
+
+@keyframes fabEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fabPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab {
+    animation: none;
+  }
+  .pulse {
+    animation: none;
+    display: none;
+  }
+}

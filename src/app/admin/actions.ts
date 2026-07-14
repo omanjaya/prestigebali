@@ -11,7 +11,15 @@
 
 import { revalidatePath } from "next/cache";
 import { getBookingService } from "@/server/booking-container";
-import { signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
+
+/** Otorisasi: setiap aksi mutasi wajib sesi Admin (Server Action = endpoint POST). */
+async function requireAdmin(): Promise<void> {
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+}
 
 /** Keluar dari sesi admin lalu alihkan ke halaman /login. */
 export async function signOutAction(): Promise<void> {
@@ -20,6 +28,7 @@ export async function signOutAction(): Promise<void> {
 
 /** Menyetujui Verifikasi Pengemudi (Lepas Kunci): AWAITING_APPROVAL → CONFIRMED. */
 export async function approveBooking(formData: FormData): Promise<void> {
+  await requireAdmin();
   const bookingId = String(formData.get("bookingId") ?? "");
   if (!bookingId) return;
   try {
@@ -33,6 +42,7 @@ export async function approveBooking(formData: FormData): Promise<void> {
 
 /** Pembatalan oleh Prestige (operator): {REQUESTED, AWAITING_APPROVAL, CONFIRMED} → CANCELLED. */
 export async function cancelBooking(formData: FormData): Promise<void> {
+  await requireAdmin();
   const bookingId = String(formData.get("bookingId") ?? "");
   if (!bookingId) return;
   try {
@@ -46,6 +56,7 @@ export async function cancelBooking(formData: FormData): Promise<void> {
 
 /** Alokasi unit fisik ke Booking CONFIRMED. */
 export async function allocateUnit(formData: FormData): Promise<void> {
+  await requireAdmin();
   const bookingId = String(formData.get("bookingId") ?? "");
   if (!bookingId) return;
   try {

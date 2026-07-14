@@ -18,6 +18,8 @@ import {
 import { formatIDR } from "@/ui/format";
 import { Icon } from "@/ui/icons";
 import { Reveal, StaggerGroup, StaggerItem } from "@/ui/motion";
+import { BaliStory } from "@/ui/bali-story";
+import { HowItWorks, Testimonials, Faq } from "@/ui/landing-trust";
 
 export type CarCard = {
   id: string;
@@ -51,9 +53,13 @@ export function Landing({
       <Hero />
       <BrandMarquee brands={brands} />
       <Experience />
+      <BaliStory />
       <Collection cars={cars} categories={categories} brands={brands} />
+      <HowItWorks />
       <Modes />
+      <Testimonials />
       <Stats carCount={cars.length} brandCount={brands.length} />
+      <Faq />
       <FinalCTA />
     </>
   );

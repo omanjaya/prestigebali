@@ -1,0 +1,151 @@
+/* ============================================================================
+   Bali Story — editorial "sense of Bali" section for the landing.
+   Warm-noir: ivory copy on ink, gold used sparingly (hairline rule, kicker,
+   the trailing CTA arrow). Large image alongside copy + a small 2-image collage.
+   All colours via tokens (--bg --surface --border --text --muted --accent).
+   ========================================================================== */
+
+.story {
+  position: relative;
+}
+
+/* Faint warm glow to break the long dark stretch (tonal rhythm, matches landing) */
+.story::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1000px, 92%);
+  height: 340px;
+  background: radial-gradient(58% 100% at 50% 0%, rgba(198, 160, 82, 0.05), transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+}
+
+/* ---- Hero image (left) ---- */
+.hero {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.hero img {
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+/* Warm scrim so ivory copy never fights the greens; keeps it noir. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to top, rgba(16, 13, 10, 0.55), transparent 45%),
+    linear-gradient(to right, rgba(16, 13, 10, 0.35), transparent 55%);
+}
+.heroCaption {
+  position: absolute;
+  z-index: 2;
+  left: clamp(1rem, 3vw, 1.75rem);
+  bottom: clamp(1rem, 3vw, 1.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.heroCaption svg {
+  color: var(--accent);
+}
+
+/* ---- Copy (right) ---- */
+.copy {
+  max-width: 34rem;
+}
+.rule {
+  width: 56px;
+  height: 2px;
+  background: var(--accent);
+  margin: 1.1rem 0 1.5rem;
+}
+.title {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  margin: 0.5rem 0 0;
+}
+.lede {
+  font-size: 1.02rem;
+  margin-top: 1.4rem;
+}
+.body {
+  margin-top: 1rem;
+}
+
+/* ---- Small 2-image collage ---- */
+.collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+.tile {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.tile img {
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.02);
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tile:hover img {
+  transform: scale(1.05);
+}
+
+/* ---- CTA ---- */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: gap 0.25s ease;
+}
+.cta:hover {
+  gap: 0.85rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .hero {
+    aspect-ratio: 16 / 11;
+  }
+  .copy {
+    max-width: none;
+  }
+}

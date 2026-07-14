@@ -8,6 +8,7 @@ import { Container, Card, CardBody, PageHeader } from "@/ui/primitives";
 import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL, statusBadgeClass } from "@/ui/format";
 import { approveBooking, cancelBooking, allocateUnit, signOutAction } from "./actions";
 import { auth } from "@/auth";
+import Link from "next/link";
 
 // Selalu baca DB terbaru — jangan cache halaman admin.
 export const dynamic = "force-dynamic";
@@ -59,6 +60,9 @@ export default async function AdminPage() {
         <PageHeader title="Admin Panel" subtitle="Reporting overview & booking management." />
         <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
           {session?.user?.email ? <span className="muted">{session.user.email}</span> : null}
+          <Link href="/admin/cars" className="btn btn-sm">
+            Manage cars
+          </Link>
           <form action={signOutAction}>
             <button type="submit" className="btn btn-ghost">
               Sign out
