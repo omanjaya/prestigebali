@@ -190,6 +190,8 @@ function Collection({
         </div>
       </Reveal>
 
+      <FleetShowcase cars={cars} />
+
       <Reveal delay={0.05}>
         <div className="filters">
           <div className="filter-row">
@@ -217,23 +219,14 @@ function Collection({
         </div>
       </Reveal>
 
-      <motion.div layout className="grid car-grid">
-        {/* initial={false}: kartu langsung tampil saat load; animasi hanya saat filter berubah. */}
-        <AnimatePresence mode="popLayout" initial={false}>
-          {filtered.map((car) => (
-            <motion.div
-              key={car.id}
-              layout
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.5, ease: EASE }}
-            >
-              <CarTile car={car} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      {/* Tiap kartu reveal saat masuk layar (CSS scroll-driven, robust). */}
+      <div className="grid car-grid">
+        {filtered.map((car) => (
+          <div key={car.id} className="reveal">
+            <CarTile car={car} />
+          </div>
+        ))}
+      </div>
 
       {filtered.length === 0 ? (
         <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>
@@ -241,6 +234,104 @@ function Collection({
         </p>
       ) : null}
     </section>
+  );
+}
+
+/* Showcase sinematik: slideshow 1 mobil/slide, auto-advance + crossfade + ken-burns,
+   kontrol (panah/dot), pause saat hover, reveal saat masuk layar. */
+function FleetShowcase({ cars }: { cars: CarCard[] }) {
+  const slides = cars.filter((c) => c.photo);
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (paused || reduce || slides.length < 2) return;
+    const t = setInterval(() => setI((v) => (v + 1) % slides.length), 5200);
+    return () => clearInterval(t);
+  }, [paused, reduce, slides.length]);
+
+  if (slides.length === 0) return null;
+  const active = slides[i] ?? slides[0]!;
+  const go = (n: number) => setI((v) => (v + n + slides.length) % slides.length);
+
+  return (
+    <div
+      className="showcase reveal"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="showcase-stage">
+        <AnimatePresence>
+          <motion.div
+            key={active.id}
+            className="showcase-slide"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: EASE }}
+          >
+            <motion.div
+              className="showcase-img"
+              initial={reduce ? false : { scale: 1.14 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 6.5, ease: "linear" }}
+            >
+              <Image src={active.photo!} alt={`${active.brand} ${active.name}`} fill priority sizes="100vw" />
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+        <div className="showcase-scrim" />
+
+        <div className="showcase-overlay">
+          <motion.div
+            key={`${active.id}-text`}
+            initial={reduce ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.12 }}
+          >
+            <span className="kicker">{active.categoryLabel}</span>
+            <h3 className="showcase-title">
+              {active.brand} {active.name}
+            </h3>
+            <div className="showcase-rate">
+              {active.dailyRate != null ? (
+                <>
+                  <span className="price">{formatIDR(active.dailyRate)}</span>{" "}
+                  <span className="price-unit">/ day · Self-Drive</span>
+                </>
+              ) : active.chauffeurPackage != null ? (
+                <>
+                  <span className="price">{formatIDR(active.chauffeurPackage)}</span>{" "}
+                  <span className="price-unit">/ 12h · Chauffeur</span>
+                </>
+              ) : null}
+            </div>
+            <Link href={`/mobil/${active.id}`} className="btn btn-primary">
+              View details <Icon name="arrow" size={16} />
+            </Link>
+          </motion.div>
+        </div>
+
+        <button className="showcase-nav prev" onClick={() => go(-1)} aria-label="Previous car">
+          <Icon name="chevron" size={20} style={{ transform: "rotate(180deg)" }} />
+        </button>
+        <button className="showcase-nav next" onClick={() => go(1)} aria-label="Next car">
+          <Icon name="chevron" size={20} />
+        </button>
+      </div>
+
+      <div className="showcase-dots">
+        {slides.map((s, idx) => (
+          <button
+            key={s.id}
+            className={idx === i ? "s-dot is-active" : "s-dot"}
+            onClick={() => setI(idx)}
+            aria-label={`Show ${s.brand} ${s.name}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
