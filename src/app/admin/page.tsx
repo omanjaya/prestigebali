@@ -4,7 +4,8 @@
 
 import { listBookings } from "@/lib/bookings";
 import type { BookingView } from "@/lib/bookings";
-import { Container, Card, CardBody, PageHeader } from "@/ui/primitives";
+import { Container, Card, CardBody } from "@/ui/primitives";
+import { Icon } from "@/ui/icons";
 import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL, statusBadgeClass } from "@/ui/format";
 import { approveBooking, cancelBooking, allocateUnit, signOutAction } from "./actions";
 import { auth } from "@/auth";
@@ -18,16 +19,31 @@ function isRevenueBearing(b: BookingView): boolean {
   return b.status !== "CANCELLED" && b.status !== "EXPIRED";
 }
 
-function StatTile({ value, label }: { value: string; label: string }) {
+type StatIcon = "key" | "calendar" | "clock" | "shield";
+
+function StatTile({ value, label, icon }: { value: string; label: string; icon: StatIcon }) {
   return (
-    <Card>
-      <CardBody>
-        <div style={{ fontSize: "1.9rem", fontWeight: 700, lineHeight: 1.1 }}>{value}</div>
-        <div className="muted" style={{ marginTop: "0.35rem" }}>
-          {label}
-        </div>
-      </CardBody>
-    </Card>
+    <div className="stat">
+      <div
+        className="row"
+        style={{ justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}
+      >
+        <div className="stat-value">{value}</div>
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-flex",
+            color: "var(--accent)",
+            border: "1px solid var(--border-strong)",
+            borderRadius: "999px",
+            padding: "0.4rem",
+          }}
+        >
+          <Icon name={icon} size={16} />
+        </span>
+      </div>
+      <div className="stat-label">{label}</div>
+    </div>
   );
 }
 
@@ -56,31 +72,68 @@ export default async function AdminPage() {
 
   return (
     <Container style={{ paddingBottom: "3rem" }}>
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-        <PageHeader title="Admin Panel" subtitle="Reporting overview & booking management." />
+      <div
+        className="reveal row"
+        style={{
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: "1.5rem",
+          padding: "3rem 0 2rem",
+          borderBottom: "1px solid var(--border)",
+          marginBottom: "2.5rem",
+        }}
+      >
+        <div>
+          <div className="kicker" style={{ marginBottom: "0.75rem" }}>
+            Admin
+          </div>
+          <h1 style={{ margin: 0 }}>Bookings</h1>
+          <p className="muted" style={{ margin: "0.6rem 0 0", maxWidth: 560 }}>
+            Reporting overview &amp; booking management.
+          </p>
+        </div>
         <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
-          {session?.user?.email ? <span className="muted">{session.user.email}</span> : null}
+          {session?.user?.email ? (
+            <span className="muted" style={{ fontSize: "0.82rem" }}>
+              {session.user.email}
+            </span>
+          ) : null}
           <Link href="/admin/cars" className="btn btn-sm">
             Manage cars
           </Link>
           <form action={signOutAction}>
-            <button type="submit" className="btn btn-ghost">
+            <button type="submit" className="btn btn-sm btn-ghost">
               Sign out
             </button>
           </form>
         </div>
       </div>
 
-      <div className="grid" style={{ marginBottom: "1.5rem" }}>
-        <StatTile value={formatIDR(pendapatan)} label="Revenue" />
-        <StatTile value={String(bookingAktif)} label="Active Bookings" />
-        <StatTile value={String(pembayaranTertunda)} label="Outstanding Payments" />
-        <StatTile value={String(menungguPersetujuan)} label="Awaiting Approval" />
+      <div
+        className="reveal"
+        style={{
+          display: "grid",
+          gap: "1rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          marginBottom: "2.5rem",
+        }}
+      >
+        <StatTile value={formatIDR(pendapatan)} label="Revenue" icon="key" />
+        <StatTile value={String(bookingAktif)} label="Active Bookings" icon="calendar" />
+        <StatTile value={String(pembayaranTertunda)} label="Outstanding Payments" icon="clock" />
+        <StatTile value={String(menungguPersetujuan)} label="Awaiting Approval" icon="shield" />
       </div>
 
+      <div className="reveal">
       <Card>
         <CardBody>
-          <h2 style={{ marginTop: 0 }}>Booking List</h2>
+          <div
+            className="row"
+            style={{ justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}
+          >
+            <h2 style={{ margin: 0 }}>Booking List</h2>
+            <span className="eyebrow">{bookings.length} total</span>
+          </div>
           <div style={{ overflowX: "auto" }}>
             <table className="table">
               <thead>
@@ -97,12 +150,21 @@ export default async function AdminPage() {
               <tbody>
                 {bookings.map((b) => (
                   <tr key={b.id}>
-                    <td>{b.id}</td>
-                    <td>{b.carName}</td>
-                    <td>{b.customerName}</td>
-                    <td>{MODE_LABEL[b.mode]}</td>
                     <td>
-                      <span className="muted" style={{ fontSize: "0.85rem" }}>
+                      <span
+                        className="muted"
+                        style={{ fontFamily: "monospace", fontSize: "0.8rem", letterSpacing: "0.02em" }}
+                      >
+                        {b.id}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{b.carName}</td>
+                    <td>{b.customerName}</td>
+                    <td>
+                      <span className="badge">{MODE_LABEL[b.mode]}</span>
+                    </td>
+                    <td>
+                      <span className="muted" style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>
                         {formatWIB(b.startAt)}
                       </span>
                     </td>
@@ -110,11 +172,11 @@ export default async function AdminPage() {
                       <span className={statusBadgeClass(b.status)}>{STATUS_LABEL[b.status]}</span>
                     </td>
                     <td>
-                      <div className="row" style={{ gap: "0.5rem" }}>
+                      <div className="row" style={{ gap: "0.5rem", flexWrap: "nowrap" }}>
                         {b.status === "AWAITING_APPROVAL" ? (
                           <form action={approveBooking}>
                             <input type="hidden" name="bookingId" value={b.id} />
-                            <button type="submit" className="btn btn-primary">
+                            <button type="submit" className="btn btn-sm btn-primary">
                               Approve
                             </button>
                           </form>
@@ -122,7 +184,7 @@ export default async function AdminPage() {
                         {b.status === "CONFIRMED" ? (
                           <form action={allocateUnit}>
                             <input type="hidden" name="bookingId" value={b.id} />
-                            <button type="submit" className="btn">
+                            <button type="submit" className="btn btn-sm">
                               Allocate Unit
                             </button>
                           </form>
@@ -130,7 +192,7 @@ export default async function AdminPage() {
                         {["REQUESTED", "AWAITING_APPROVAL", "CONFIRMED"].includes(b.status) ? (
                           <form action={cancelBooking}>
                             <input type="hidden" name="bookingId" value={b.id} />
-                            <button type="submit" className="btn btn-ghost">
+                            <button type="submit" className="btn btn-sm btn-ghost">
                               Cancel
                             </button>
                           </form>
@@ -144,6 +206,7 @@ export default async function AdminPage() {
           </div>
         </CardBody>
       </Card>
+      </div>
     </Container>
   );
 }

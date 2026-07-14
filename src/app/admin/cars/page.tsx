@@ -6,7 +6,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Container, Card, CardBody, PageHeader, ButtonLink } from "@/ui/primitives";
+import { Container, Card, CardBody, ButtonLink } from "@/ui/primitives";
 import { CATEGORY_LABEL } from "@/lib/catalog";
 import { formatIDR } from "@/ui/format";
 
@@ -27,10 +27,28 @@ export default async function AdminCarsPage() {
 
   return (
     <Container style={{ paddingBottom: "3rem" }}>
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-        <PageHeader title="Manage Cars" subtitle="Add, edit, and remove catalog vehicles." />
+      <div
+        className="reveal row"
+        style={{
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: "1.5rem",
+          padding: "3rem 0 2rem",
+          borderBottom: "1px solid var(--border)",
+          marginBottom: "2.5rem",
+        }}
+      >
+        <div>
+          <div className="kicker" style={{ marginBottom: "0.75rem" }}>
+            Admin · Fleet
+          </div>
+          <h1 style={{ margin: 0 }}>Manage Cars</h1>
+          <p className="muted" style={{ margin: "0.6rem 0 0", maxWidth: 560 }}>
+            Add, edit, and remove catalog vehicles.
+          </p>
+        </div>
         <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
-          <Link href="/admin" className="btn btn-ghost">
+          <Link href="/admin" className="btn btn-sm btn-ghost">
             ← Back to Admin
           </Link>
           <ButtonLink href="/admin/cars/new" variant="primary">
@@ -39,9 +57,16 @@ export default async function AdminCarsPage() {
         </div>
       </div>
 
+      <div className="reveal">
       <Card>
         <CardBody>
-          <h2 style={{ marginTop: 0 }}>Catalog ({cars.length})</h2>
+          <div
+            className="row"
+            style={{ justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.5rem" }}
+          >
+            <h2 style={{ margin: 0 }}>Catalog</h2>
+            <span className="eyebrow">{cars.length} vehicles</span>
+          </div>
           <div style={{ overflowX: "auto" }}>
             <table className="table">
               <thead>
@@ -75,25 +100,42 @@ export default async function AdminCarsPage() {
                             height={44}
                             unoptimized
                             style={{
+                              display: "block",
                               objectFit: "cover",
                               borderRadius: "var(--radius)",
                               border: "1px solid var(--border)",
                             }}
                           />
                         ) : (
-                          <span className="muted" style={{ fontSize: "0.8rem" }}>
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 64,
+                              height: 44,
+                              borderRadius: "var(--radius)",
+                              border: "1px solid var(--border)",
+                              background: "var(--surface-2)",
+                              color: "var(--muted-dim)",
+                              fontSize: "0.9rem",
+                            }}
+                          >
                             —
                           </span>
                         )}
                       </td>
-                      <td>{c.name}</td>
+                      <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{c.name}</td>
                       <td>{c.brand}</td>
-                      <td>{CATEGORY_LABEL[c.category]}</td>
-                      <td>{c.stock}</td>
-                      <td>{rate(c.dailyRate)}</td>
-                      <td>{rate(c.chauffeurPackage)}</td>
                       <td>
-                        <Link href={`/admin/cars/${c.id}`} className="btn">
+                        <span className="badge badge-accent">{CATEGORY_LABEL[c.category]}</span>
+                      </td>
+                      <td>{c.stock}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{rate(c.dailyRate)}</td>
+                      <td style={{ whiteSpace: "nowrap" }}>{rate(c.chauffeurPackage)}</td>
+                      <td>
+                        <Link href={`/admin/cars/${c.id}`} className="btn btn-sm">
                           Edit
                         </Link>
                       </td>
@@ -105,6 +147,7 @@ export default async function AdminCarsPage() {
           </div>
         </CardBody>
       </Card>
+      </div>
     </Container>
   );
 }

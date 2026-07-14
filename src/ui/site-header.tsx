@@ -4,6 +4,7 @@
 // Nav berupa anchor ke section landing + CTA.
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -14,16 +15,26 @@ const LINKS = [
 ];
 
 export function SiteHeader() {
-  // Topbar tersembunyi di atas (hero); muncul setelah scroll.
-  const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
+  const isLanding = pathname === "/";
+  // Landing: topbar tersembunyi di hero, muncul saat scroll. Halaman lain: selalu terlihat.
+  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const visible = !isLanding || scrolled;
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 120);
+    if (!isLanding) return; // halaman non-landing tak butuh logika scroll
+    const onScroll = () => setScrolled(window.scrollY > 120);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isLanding]);
+
+  // Beri padding-atas pada konten halaman non-landing agar tak tertutup header fixed.
+  useEffect(() => {
+    document.body.classList.toggle("inner-page", !isLanding);
+    return () => document.body.classList.remove("inner-page");
+  }, [isLanding]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";

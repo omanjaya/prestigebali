@@ -23,6 +23,10 @@
 .site-header-inner {
   height: 72px;
 }
+/* Halaman non-landing: header selalu terlihat → beri ruang agar konten tak tertutup. */
+body.inner-page main {
+  padding-top: 72px;
+}
 
 /* Brand lockup: "Prestige" + "BALI" (emas, tiny caps) */
 .brand {

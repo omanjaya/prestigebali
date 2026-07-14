@@ -32,8 +32,10 @@ export function CarForm({ car }: { car?: CarModelView }) {
 
   return (
     <>
-      <form action={formAction} className="stack">
+      <form action={formAction} className="stack" style={{ gap: "1.25rem" }}>
         {car ? <input type="hidden" name="id" value={car.id} /> : null}
+
+        <div className="eyebrow">Identity</div>
 
         <Field label="Name" htmlFor="name">
           <input id="name" name="name" type="text" defaultValue={car?.name ?? ""} required />
@@ -82,6 +84,9 @@ export function CarForm({ car }: { car?: CarModelView }) {
           />
         </Field>
 
+        <div className="divider" style={{ margin: "0.5rem 0" }} />
+        <div className="eyebrow">Classification</div>
+
         <Field label="Category" htmlFor="category">
           <select id="category" name="category" defaultValue={car?.category ?? ""} required>
             <option value="" disabled>
@@ -105,6 +110,9 @@ export function CarForm({ car }: { car?: CarModelView }) {
             required
           />
         </Field>
+
+        <div className="divider" style={{ margin: "0.5rem 0" }} />
+        <div className="eyebrow">Pricing</div>
 
         <div className="row" style={{ gap: "1rem", alignItems: "flex-start" }}>
           <div style={{ flex: 1, minWidth: 160 }}>
@@ -133,6 +141,9 @@ export function CarForm({ car }: { car?: CarModelView }) {
           </div>
         </div>
 
+        <div className="divider" style={{ margin: "0.5rem 0" }} />
+        <div className="eyebrow">Media</div>
+
         <Field label="Photo URLs (one per line)" htmlFor="photos">
           <textarea
             id="photos"
@@ -148,6 +159,8 @@ export function CarForm({ car }: { car?: CarModelView }) {
             {state.error}
           </p>
         ) : null}
+
+        <div className="divider" style={{ margin: "0.5rem 0" }} />
 
         <div className="row" style={{ gap: "0.75rem" }}>
           <button type="submit" className="btn btn-primary" disabled={pending}>

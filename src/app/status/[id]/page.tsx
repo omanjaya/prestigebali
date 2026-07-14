@@ -10,7 +10,10 @@ import {
   statusBadgeClass,
 } from "@/ui/format";
 import { Container, Card, CardBody, ButtonLink } from "@/ui/primitives";
+import { Icon } from "@/ui/icons";
+import { waLink } from "@/lib/site-config";
 import type { BookingStatus, RentalMode } from "@/domain/booking/booking";
+import type { ReactNode } from "react";
 
 /** Terminal state yang menghentikan happy-path (ADR-0001). */
 const TERMINAL: BookingStatus[] = ["EXPIRED", "CANCELLED"];
@@ -31,6 +34,43 @@ function steps(mode: RentalMode): Step[] {
     .map((s) => ({ status: s, label: STATUS_LABEL[s] }));
 }
 
+/** Baris detail hairline: micro-label + nilai, sejajar rapi. */
+function DetailRow({
+  icon,
+  label,
+  children,
+  last,
+}: {
+  icon: Parameters<typeof Icon>[0]["name"];
+  label: string;
+  children: ReactNode;
+  last?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        gap: "1.5rem",
+        padding: "0.9rem 0",
+        borderBottom: last ? "none" : "1px solid var(--border)",
+      }}
+    >
+      <span
+        className="eyebrow"
+        style={{ display: "inline-flex", alignItems: "center", gap: "0.55rem", flex: "0 0 auto" }}
+      >
+        <Icon name={icon} size={15} style={{ color: "var(--accent)", opacity: 0.85 }} />
+        {label}
+      </span>
+      <span style={{ textAlign: "right", color: "var(--text)", fontSize: "0.95rem" }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
 export default async function StatusPage({
   params,
 }: {
@@ -41,22 +81,31 @@ export default async function StatusPage({
 
   if (!b) {
     return (
-      <Container style={{ padding: "2rem 0" }}>
-        <Card>
-          <CardBody>
-            <div className="stack">
-              <h1 style={{ margin: 0 }}>Booking not found</h1>
-              <p className="muted" style={{ margin: 0 }}>
-                Booking code &ldquo;{id}&rdquo; was not recognized. Please double-check your link.
-              </p>
-              <div className="row">
-                <ButtonLink href="/" variant="primary">
-                  Back to Home
-                </ButtonLink>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
+      <Container style={{ padding: "4rem 0" }}>
+        <div className="reveal" style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div className="kicker" style={{ marginBottom: "0.9rem" }}>
+            Booking · {id}
+          </div>
+          <h1 style={{ margin: 0 }}>Booking not found</h1>
+          <div style={{ width: 56, height: 2, background: "var(--accent)", margin: "1.4rem 0" }} />
+          <p className="muted" style={{ margin: "0 0 1.75rem" }}>
+            We couldn&rsquo;t find a booking for code &ldquo;{id}&rdquo;. Please double-check the
+            link, or reach us and we&rsquo;ll locate it for you.
+          </p>
+          <div className="row" style={{ gap: "0.9rem" }}>
+            <ButtonLink href="/" variant="primary">
+              Back to Home
+            </ButtonLink>
+            <a
+              className="btn"
+              href={waLink(`Hi Prestige, I can't find my booking ${id}.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Need help?
+            </a>
+          </div>
+        </div>
       </Container>
     );
   }
@@ -66,68 +115,187 @@ export default async function StatusPage({
   const currentIndex = flow.findIndex((s) => s.status === b.status);
 
   return (
-    <Container style={{ padding: "2rem 0" }}>
-      <div className="stack" style={{ gap: "1.25rem" }}>
-        {/* 1. Header + status badge */}
-        <div className="row">
-          <h1 style={{ margin: 0 }}>Booking {b.id}</h1>
-          <span className={statusBadgeClass(b.status)}>{STATUS_LABEL[b.status]}</span>
-        </div>
+    <Container style={{ padding: "3.5rem 0 4.5rem" }}>
+      <div className="stack" style={{ gap: "2rem", maxWidth: 760, margin: "0 auto" }}>
+        {/* 1. Header — id kicker, serif car name, status badge */}
+        <header className="reveal">
+          <div className="kicker" style={{ marginBottom: "0.85rem" }}>
+            Booking · {b.id}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: "1.25rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <h1 style={{ margin: 0, fontSize: "clamp(2rem, 5vw, 3.2rem)" }}>{b.carName}</h1>
+            <span className={statusBadgeClass(b.status)} style={{ marginTop: "0.4rem" }}>
+              {STATUS_LABEL[b.status]}
+            </span>
+          </div>
+          <div style={{ width: 56, height: 2, background: "var(--accent)", marginTop: "1.4rem" }} />
+        </header>
 
         {/* 2. Timeline / stepper */}
-        <Card>
+        <div className="reveal">
+        <Card style={{ borderColor: "var(--border)" }}>
           <CardBody>
-            <h2 style={{ marginTop: 0 }}>Order Status</h2>
+            <div className="eyebrow" style={{ marginBottom: "1.5rem" }}>
+              Order Status
+            </div>
+
             {isTerminal ? (
-              <div className="stack" style={{ gap: "0.5rem" }}>
-                <div className="row">
-                  <span className="badge badge-danger">{STATUS_LABEL[b.status]}</span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  padding: "0.5rem 0",
+                  alignItems: "flex-start",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "2.4rem",
+                    height: "2.4rem",
+                    borderRadius: "999px",
+                    flex: "0 0 auto",
+                    color: "var(--danger)",
+                    border: "1px solid color-mix(in srgb, var(--danger) 45%, transparent)",
+                    background: "color-mix(in srgb, var(--danger) 12%, transparent)",
+                  }}
+                >
+                  <Icon name={b.status === "EXPIRED" ? "clock" : "shield"} size={18} />
+                </span>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontSize: "1.35rem",
+                      color: "var(--text)",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {STATUS_LABEL[b.status]}
+                  </div>
+                  <p className="muted" style={{ margin: "0.4rem 0 0", maxWidth: 460 }}>
+                    {b.status === "EXPIRED"
+                      ? "The payment window has elapsed and the stock hold has been released."
+                      : "This booking has been cancelled."}
+                  </p>
                 </div>
-                <p className="muted" style={{ margin: 0 }}>
-                  {b.status === "EXPIRED"
-                    ? "The payment window has elapsed and the stock hold has been released."
-                    : "This booking has been cancelled."}
-                </p>
               </div>
             ) : (
-              <ol
-                className="stack"
-                style={{ listStyle: "none", margin: 0, padding: 0, gap: "0.75rem" }}
-              >
+              <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
                 {flow.map((step, i) => {
                   const done = currentIndex >= 0 && i < currentIndex;
                   const current = i === currentIndex;
+                  const isLast = i === flow.length - 1;
                   const dotColor = current
                     ? "var(--accent)"
                     : done
                       ? "var(--ok)"
-                      : "var(--border)";
+                      : "var(--border-strong)";
+                  const lineColor = done ? "var(--ok)" : "var(--border)";
                   return (
-                    <li key={step.status} className="row" style={{ gap: "0.6rem" }}>
-                      <span
-                        aria-hidden
+                    <li
+                      key={step.status}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1.5rem 1fr",
+                        columnGap: "1rem",
+                      }}
+                    >
+                      {/* Marker: dot + connector */}
+                      <div
                         style={{
-                          width: "0.9rem",
-                          height: "0.9rem",
-                          borderRadius: "999px",
-                          background: current || done ? dotColor : "transparent",
-                          border: `2px solid ${dotColor}`,
-                          flex: "0 0 auto",
-                        }}
-                      />
-                      <span
-                        style={{
-                          color: current
-                            ? "var(--accent)"
-                            : done
-                              ? "var(--text)"
-                              : "var(--muted)",
-                          fontWeight: current ? 700 : 500,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
                         }}
                       >
-                        {step.label}
-                        {current ? " · now" : ""}
-                      </span>
+                        <span
+                          aria-hidden
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "1.5rem",
+                            height: "1.5rem",
+                            borderRadius: "999px",
+                            flex: "0 0 auto",
+                            background: current
+                              ? "var(--accent)"
+                              : done
+                                ? "var(--ok)"
+                                : "transparent",
+                            border: `1.5px solid ${dotColor}`,
+                            boxShadow: current
+                              ? "0 0 0 4px var(--accent-soft)"
+                              : "none",
+                          }}
+                        >
+                          {done ? (
+                            <Icon name="check" size={13} style={{ color: "var(--bg)" }} />
+                          ) : current ? (
+                            <span
+                              style={{
+                                width: "0.42rem",
+                                height: "0.42rem",
+                                borderRadius: "999px",
+                                background: "var(--bg)",
+                              }}
+                            />
+                          ) : null}
+                        </span>
+                        {!isLast ? (
+                          <span
+                            style={{
+                              width: 2,
+                              flex: 1,
+                              minHeight: "1.6rem",
+                              background: lineColor,
+                            }}
+                          />
+                        ) : null}
+                      </div>
+
+                      {/* Content */}
+                      <div style={{ paddingBottom: isLast ? 0 : "1.6rem" }}>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontSize: "1.15rem",
+                            lineHeight: 1.2,
+                            color: current
+                              ? "var(--accent)"
+                              : done
+                                ? "var(--text)"
+                                : "var(--muted)",
+                          }}
+                        >
+                          {step.label}
+                        </div>
+                        <div
+                          className="eyebrow"
+                          style={{
+                            marginTop: "0.3rem",
+                            color: current
+                              ? "var(--accent)"
+                              : done
+                                ? "var(--ok)"
+                                : "var(--muted-dim)",
+                          }}
+                        >
+                          {current ? "In progress" : done ? "Completed" : "Upcoming"}
+                        </div>
+                      </div>
                     </li>
                   );
                 })}
@@ -135,68 +303,85 @@ export default async function StatusPage({
             )}
           </CardBody>
         </Card>
+        </div>
 
-        {/* 3. Detail booking */}
-        <Card>
+        {/* 3. Detail booking — hairline rows */}
+        <div className="reveal">
+        <Card style={{ borderColor: "var(--border)" }}>
           <CardBody>
-            <h2 style={{ marginTop: 0 }}>Booking Details</h2>
-            <table className="table">
-              <tbody>
-                <tr>
-                  <th style={{ width: "40%" }}>Car</th>
-                  <td>{b.carName}</td>
-                </tr>
-                <tr>
-                  <th>Mode</th>
-                  <td>{MODE_LABEL[b.mode]}</td>
-                </tr>
-                <tr>
-                  <th>Period</th>
-                  <td>
-                    {formatWIB(b.startAt)} – {formatWIB(b.endAt)}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Customer</th>
-                  <td>
-                    {b.customerName} · {b.customerPhone}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Allocated unit</th>
-                  <td>{b.allocatedUnit ?? "not yet allocated"}</td>
-                </tr>
-                <tr>
-                  <th>Deposit</th>
-                  <td>{b.dpAmount != null ? formatIDR(b.dpAmount) : "—"}</td>
-                </tr>
-                <tr>
-                  <th>Balance</th>
-                  <td>
-                    {b.settlementAmount != null ? formatIDR(b.settlementAmount) : "—"}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="eyebrow" style={{ marginBottom: "0.5rem" }}>
+              Booking Details
+            </div>
+            <DetailRow icon="key" label="Car">
+              {b.carName}
+            </DetailRow>
+            <DetailRow icon="steering" label="Mode">
+              {MODE_LABEL[b.mode]}
+            </DetailRow>
+            <DetailRow icon="calendar" label="Period">
+              {formatWIB(b.startAt)} &ndash; {formatWIB(b.endAt)}
+            </DetailRow>
+            <DetailRow icon="user" label="Customer">
+              {b.customerName}
+              <span className="muted" style={{ display: "block", fontSize: "0.85rem" }}>
+                {b.customerPhone}
+              </span>
+            </DetailRow>
+            <DetailRow icon="mapPin" label="Allocated unit">
+              {b.allocatedUnit ?? (
+                <span className="muted">Not yet allocated</span>
+              )}
+            </DetailRow>
+            <DetailRow icon="shield" label="Deposit">
+              {b.dpAmount != null ? (
+                <span className="price">{formatIDR(b.dpAmount)}</span>
+              ) : (
+                <span className="muted">&mdash;</span>
+              )}
+            </DetailRow>
+            <DetailRow icon="check" label="Balance" last>
+              {b.settlementAmount != null ? (
+                <span className="price">{formatIDR(b.settlementAmount)}</span>
+              ) : (
+                <span className="muted">&mdash;</span>
+              )}
+            </DetailRow>
           </CardBody>
         </Card>
+        </div>
 
-        {/* 4. CTA */}
-        {b.status === "REQUESTED" ? (
-          <div className="row">
-            {/* TODO: wire ke pembayaran (Midtrans) */}
+        {/* 4. CTA — payment + WhatsApp help */}
+        <div
+          className="reveal"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.9rem",
+            flexWrap: "wrap",
+          }}
+        >
+          {b.status === "REQUESTED" ? (
+            /* TODO: wire ke pembayaran (Midtrans) */
             <button type="button" className="btn btn-primary">
               Pay Deposit
             </button>
-          </div>
-        ) : b.status === "CONFIRMED" && b.settlementAmount == null ? (
-          <div className="row">
-            {/* TODO: wire ke pembayaran (Midtrans) */}
+          ) : b.status === "CONFIRMED" && b.settlementAmount == null ? (
+            /* TODO: wire ke pembayaran (Midtrans) */
             <button type="button" className="btn btn-primary">
               Pay Balance
             </button>
-          </div>
-        ) : null}
+          ) : null}
+          <a
+            className="btn btn-ghost"
+            href={waLink(
+              `Hi Prestige, I have a question about booking ${b.id} (${b.carName}).`,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Need help? Chat on WhatsApp
+          </a>
+        </div>
       </div>
     </Container>
   );
