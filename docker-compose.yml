@@ -1,6 +1,9 @@
 # Lingkungan lokal lengkap (ADR-0005): app + database dalam Docker.
-# Jalankan: docker compose up -d --build   →  app di http://localhost:3000
-# Untuk ngoding harian dengan hot-reload, tetap bisa: docker compose up -d db && npm run dev
+#
+# Mode PROD-LIKE (build statis):  docker compose up -d --build        → http://localhost:3000
+# Mode DEV hot-reload di Docker:  docker compose --profile dev up -d app-dev
+#   (matikan `app` dulu bila jalan: docker compose stop app — keduanya memakai port 3000)
+# Alternatif dev tanpa Docker utk app: docker compose up -d db && npm run dev
 services:
   app:
     build: .
@@ -14,6 +17,46 @@ services:
     # …tapi DATABASE_URL dioverride: dari dalam container, Postgres bernama `db`, bukan localhost.
     environment:
       DATABASE_URL: "postgresql://prestige:prestige@db:5432/prestige?schema=public"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Dev hot-reload di dalam Docker (profile `dev`, tidak ikut `up` default).
+  # Source di-bind-mount dari Windows; node_modules & .next hidup di NAMED VOLUME
+  # terpisah (binari Linux — engine Prisma/sharp — tidak boleh tercampur dgn
+  # node_modules Windows di host). Volume node_modules terisi otomatis dari image
+  # (hasil `npm ci` saat build) ketika pertama dibuat. JANGAN jalankan `npm install`
+  # di dalam container: npm versi container akan menulis ulang package-lock.json host
+  # lewat bind-mount. Setelah mengubah dependency:
+  #   docker compose --profile dev stop app-dev && docker compose --profile dev rm -f app-dev
+  #   docker volume rm prestige_prestige-dev-node-modules prestige_prestige-dev-next
+  #   docker compose --profile dev up -d --build app-dev
+  # (JANGAN `down -v` — itu ikut menghapus volume database prestige-db-data.)
+  app-dev:
+    build: .
+    container_name: prestige-app-dev
+    profiles: ["dev"]
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: "postgresql://prestige:prestige@db:5432/prestige?schema=public"
+      # File-watching lintas bind-mount Windows→Linux butuh polling.
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - prestige-dev-node-modules:/app/node_modules
+      - prestige-dev-next:/app/.next
+    # --webpack: watcher Turbopack tidak mendeteksi perubahan pada bind-mount Windows
+    # dan mengabaikan WATCHPACK_POLLING (env itu khusus webpack). Webpack + polling
+    # adalah kombinasi yang terbukti jalan untuk hot-reload lintas bind-mount.
+    command: >
+      sh -c "npx prisma generate
+      && npx prisma migrate deploy
+      && npx next dev -H 0.0.0.0 --webpack"
     depends_on:
       db:
         condition: service_healthy
@@ -38,3 +81,5 @@ services:
 
 volumes:
   prestige-db-data:
+  prestige-dev-node-modules:
+  prestige-dev-next:

@@ -28,12 +28,19 @@ npm install
 cp .env.example .env          # lalu isi nilainya
 
 # 3. Database lokal (butuh Docker)
-docker compose up -d          # Postgres di localhost:5432
+docker compose up -d db       # Postgres di localhost:5432
 npm run db:generate           # generate Prisma Client
 npm run db:migrate            # buat skema (migrasi pertama)
+node prisma/seed.mjs          # isi katalog contoh (6 Mobil, 11 Unit)
 
-# 4. Jalankan
+# 4a. Jalankan di host (hot-reload, tercepat)
 npm run dev                   # http://localhost:3000
+
+# 4b. ATAU full-stack di Docker
+docker compose up -d --build                  # prod-like (next start)
+docker compose --profile dev up -d app-dev    # dev + HOT-RELOAD di Docker
+#   (port 3000 dipakai bergantian — stop yang satunya dulu: docker compose stop app)
+#   Setelah mengubah dependency, reset volume dev: lihat komentar di docker-compose.yml
 ```
 
 ## Skrip
