@@ -1,0 +1,465 @@
+/* ============================================================================
+   Landing (Editorial Noir) — header scroll/menu, hero motion, sections,
+   fully responsive. Animasi via Framer Motion (lihat src/ui/*).
+   ========================================================================== */
+
+/* Header scroll-aware + toggle */
+.site-header {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.site-header.is-scrolled {
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.72rem;
+}
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.nav-toggle-bar {
+  width: 18px;
+  height: 1.5px;
+  background: var(--text);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.nav-toggle-bar.a {
+  transform: translateY(3.5px) rotate(45deg);
+}
+.nav-toggle-bar.b {
+  transform: translateY(-3px) rotate(-45deg);
+}
+.mobile-menu {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  backdrop-filter: blur(16px);
+}
+.mobile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem var(--gutter) 2rem;
+}
+.mobile-menu-nav a:not(.btn) {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  padding: 0.4rem 0;
+  color: var(--text);
+}
+.mobile-menu-nav .btn {
+  margin-top: 0.75rem;
+  align-self: flex-start;
+}
+
+/* Hero motion bits */
+.hero-title {
+  font-size: clamp(2.6rem, 8vw, 5.5rem);
+  line-height: 1.1;
+  margin: 0.5rem 0 0;
+}
+.hero-line {
+  display: block;
+  overflow: hidden;
+  /* Beri ruang descender (mis. 'g') agar tak terpotong mask reveal. */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.hero-sub {
+  font-size: clamp(0.98rem, 1.6vw, 1.1rem);
+  max-width: 520px;
+  margin-top: 0.5rem;
+}
+.hero-actions {
+  margin-top: 1.9rem;
+  gap: 0.9rem;
+}
+.hero-rule {
+  width: 72px;
+  height: 2px;
+  background: var(--accent);
+  margin: 1.6rem 0;
+  transform-origin: left;
+}
+.hero-scroll {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(2rem, 5vw, 3.5rem);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.hero-scroll-line {
+  width: 1px;
+  height: 46px;
+  background: var(--accent);
+  display: block;
+}
+
+/* Brand marquee */
+.marquee {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 1.4rem 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.4vw, 1.9rem);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.marquee-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Generic section */
+.section {
+  padding: clamp(4rem, 9vw, 7rem) var(--gutter);
+}
+.section-title {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  max-width: 16ch;
+  margin: 0.5rem 0 0;
+}
+
+/* Experience / features */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+.feature {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: 50%;
+  color: var(--accent);
+  margin-bottom: 1.1rem;
+}
+.feature-title {
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+}
+
+/* Collection filters + chips */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2.25rem 0 2.75rem;
+}
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.chip {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.chip:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+.chip.is-active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--accent-soft);
+}
+
+/* Car tile */
+.car-grid {
+  gap: 1.75rem;
+}
+.car-tile {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 100%;
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.4s ease;
+}
+.car-tile:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-strong);
+}
+.car-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.car-media img {
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.car-tile:hover .car-media img {
+  transform: scale(1.06);
+}
+.car-media-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 100% at 50% 0%, #23201a, #101013 70%);
+  font-family: var(--font-display);
+  color: color-mix(in srgb, var(--accent) 60%, var(--muted));
+}
+.car-cat {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+}
+.car-body {
+  padding: 1.3rem 1.35rem 1.45rem;
+}
+.car-head {
+  display: flex;
+  flex-direction: column;
+}
+.car-name {
+  font-size: 1.4rem;
+  margin: 0;
+}
+.car-brand {
+  font-size: 0.88rem;
+}
+.car-spec {
+  font-size: 0.8rem;
+  margin: 0.8rem 0 0;
+}
+.car-rates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
+}
+.rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.car-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: gap 0.25s ease;
+}
+.car-tile:hover .car-cta {
+  gap: 0.8rem;
+}
+
+/* Modes */
+.modes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+  margin-top: 3rem;
+}
+.mode-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+.mode-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.mode-media img {
+  object-fit: cover;
+}
+.mode-icon {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+}
+.mode-body {
+  padding: 1.6rem 1.7rem 1.9rem;
+}
+.mode-title {
+  font-size: 1.7rem;
+  margin: 0.5rem 0 0.6rem;
+}
+
+/* Stats band */
+.stats-band {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: clamp(2.5rem, 6vw, 4rem) 0;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+.stat-item {
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1;
+  color: var(--text);
+}
+.stat-suffix {
+  color: var(--accent);
+}
+.stat-item .stat-label {
+  margin-top: 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Final CTA */
+.cta-band {
+  padding: clamp(5rem, 11vw, 9rem) var(--gutter);
+  text-align: center;
+  background: radial-gradient(120% 140% at 50% 0%, rgba(197, 162, 77, 0.08), transparent 60%);
+}
+.cta-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.cta-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  margin: 0.6rem 0 0.5rem;
+}
+.cta-sub {
+  max-width: 440px;
+  margin-bottom: 1.75rem;
+}
+
+/* Footer admin link */
+.footer-admin {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 860px) {
+  .site-nav--desktop {
+    display: none;
+  }
+  .nav-toggle {
+    display: flex;
+  }
+  .modes-grid {
+    grid-template-columns: 1fr;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1rem;
+  }
+}
+@media (max-width: 560px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-actions .btn {
+    width: 100%;
+  }
+  .hero-scroll {
+    display: none;
+  }
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
