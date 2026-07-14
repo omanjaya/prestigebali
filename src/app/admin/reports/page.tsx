@@ -137,9 +137,6 @@ export default async function ReportsPage() {
             Generated {formatWIB(generatedAt)}
           </p>
         </div>
-        <Link href="/admin" className="btn btn-sm btn-ghost">
-          ← Back to Admin
-        </Link>
       </div>
 
       {/* ---- KPI row ---- */}

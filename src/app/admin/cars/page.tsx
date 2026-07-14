@@ -48,9 +48,6 @@ export default async function AdminCarsPage() {
           </p>
         </div>
         <div className="row" style={{ gap: "0.75rem", alignItems: "center" }}>
-          <Link href="/admin" className="btn btn-sm btn-ghost">
-            ← Back to Admin
-          </Link>
           <ButtonLink href="/admin/cars/new" variant="primary">
             Add car
           </ButtonLink>
