@@ -80,7 +80,7 @@ function Hero() {
       <div className="hero-content">
         <div className="container">
           <div className="hero-text">
-            <span className="kicker hero-anim">Luxury Car Rental · Jakarta</span>
+            <span className="kicker hero-anim">Luxury Car Rental · Bali</span>
             <h1 className="hero-title hero-anim">
               The art
               <br />

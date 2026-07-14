@@ -14,11 +14,12 @@ const LINKS = [
 ];
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
+  // Topbar tersembunyi di atas (hero); muncul setelah scroll.
+  const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setVisible(window.scrollY > 120);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -32,7 +33,7 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className={`site-header${scrolled ? " is-scrolled" : ""}`}>
+    <header className={`site-header${visible || open ? " is-visible" : ""}`}>
       <div className="container site-header-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
           Prestige

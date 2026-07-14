@@ -195,9 +195,10 @@ p {
 .hero {
   position: relative;
   width: 100%;
-  min-height: min(80vh, 760px);
+  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
 }
@@ -224,13 +225,14 @@ p {
   position: relative;
   z-index: 2;
   width: 100%;
-  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+  text-align: center;
 }
 .hero-content .container {
   max-width: var(--maxw);
 }
 .hero-text {
-  max-width: 640px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 .hero-content h1 {
   margin: 0.6rem 0 1rem;

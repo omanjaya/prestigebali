@@ -3,16 +3,22 @@
    fully responsive. Animasi via Framer Motion (lihat src/ui/*).
    ========================================================================== */
 
-/* Header scroll-aware + toggle */
+/* Header: fixed, tersembunyi di hero, muncul saat scroll (.is-visible) */
 .site-header {
-  background: transparent;
-  border-bottom: 1px solid transparent;
-  transition: background 0.3s ease, border-color 0.3s ease;
-}
-.site-header.is-scrolled {
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transform: translateY(-110%);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.site-header.is-visible {
+  transform: translateY(0);
 }
 .btn-sm {
   padding: 0.5rem 1rem;
@@ -81,24 +87,25 @@
 }
 .hero-sub {
   font-size: clamp(0.98rem, 1.6vw, 1.1rem);
-  max-width: 520px;
-  margin-top: 0.5rem;
+  max-width: 540px;
+  margin: 0.5rem auto 0;
 }
 .hero-actions {
   margin-top: 1.9rem;
   gap: 0.9rem;
+  justify-content: center;
 }
 .hero-rule {
   width: 72px;
   height: 2px;
   background: var(--accent);
-  margin: 1.6rem 0;
-  transform-origin: left;
+  margin: 1.6rem auto;
 }
 .hero-scroll {
   position: absolute;
-  right: var(--gutter);
-  bottom: clamp(2rem, 5vw, 3.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: clamp(1.5rem, 4vw, 2.75rem);
   z-index: 3;
   display: flex;
   flex-direction: column;
@@ -529,5 +536,77 @@
   .section-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ---- Lenis smooth scroll ---- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ---- Custom cursor ---- */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 50%;
+  transform: translate(var(--x, -100px), var(--y, -100px)) translate(-50%, -50%);
+}
+.cursor-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+}
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  transition:
+    width 0.25s ease,
+    height 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+/* Sembunyikan cursor OS hanya bila cursor custom aktif (desktop pointer halus) */
+body.has-custom-cursor,
+body.has-custom-cursor a,
+body.has-custom-cursor button,
+body.has-custom-cursor [role="button"],
+body.has-custom-cursor input,
+body.has-custom-cursor select,
+body.has-custom-cursor label {
+  cursor: none;
+}
+body:not(.has-custom-cursor) .cursor-dot,
+body:not(.has-custom-cursor) .cursor-ring {
+  display: none;
+}
+body.cursor-hover .cursor-ring {
+  width: 54px;
+  height: 54px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 80%, transparent);
+}
+body.cursor-down .cursor-ring {
+  width: 26px;
+  height: 26px;
+}
+@media (hover: none), (pointer: coarse) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none;
   }
 }

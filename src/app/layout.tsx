@@ -3,6 +3,8 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import "./landing.css";
 import { SiteHeader } from "@/ui/site-header";
+import { SmoothScroll } from "@/ui/smooth-scroll";
+import { CustomCursor } from "@/ui/custom-cursor";
 import Link from "next/link";
 
 // Editorial Noir: serif display + sans bersih (maks 2 typeface).
@@ -19,8 +21,8 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Prestige — Luxury Car Rental",
-  description: "Self-drive or chauffeur. A curated fleet of the world's finest cars.",
+  title: "Prestige Bali — Luxury Car Rental",
+  description: "Self-drive or chauffeur in Bali. A curated fleet of the world's finest cars.",
 };
 
 export default function RootLayout({
@@ -29,13 +31,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
+        <SmoothScroll />
+        <CustomCursor />
         <SiteHeader />
         <main>{children}</main>
         <footer className="site-footer">
           <div className="container site-footer-inner">
-            <span className="footer-brand">Prestige</span>
+            <span className="footer-brand">Prestige Bali</span>
             <span className="muted footer-tag">
-              Luxury Car Rental · Self-Drive &amp; Chauffeur
+              Luxury Car Rental · Bali · Self-Drive &amp; Chauffeur
             </span>
             <Link href="/admin" className="footer-admin muted">
               Admin
