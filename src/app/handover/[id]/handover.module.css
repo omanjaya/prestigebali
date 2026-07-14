@@ -1,0 +1,340 @@
+/* ============================================================================
+   Berita Acara Serah Terima — ivory "paper" document on the dark Noir desk.
+   Mirrors the receipt aesthetic; two columns for Pengambilan (OUT) & Pengembalian (IN).
+   ========================================================================== */
+
+.page {
+  --ink: #1a1613;
+  --ink-soft: #5c5348;
+  --ink-faint: #8a8072;
+  --paper: #f6f1e7;
+  --paper-edge: #ece4d3;
+  --gold: #9c7c33;
+  --gold-soft: #b7924a;
+  --hair: #ddd2bd;
+
+  display: flex;
+  justify-content: center;
+  padding: clamp(2rem, 6vw, 5rem) var(--gutter);
+}
+
+.paper {
+  width: 100%;
+  max-width: 860px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--paper-edge);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 30px 70px -30px rgba(0, 0, 0, 0.65),
+    0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  padding: clamp(1.75rem, 5vw, 3.25rem);
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+.paper::before {
+  content: "";
+  display: block;
+  height: 2px;
+  margin: calc(-1 * clamp(1.75rem, 5vw, 3.25rem)) calc(-1 * clamp(1.75rem, 5vw, 3.25rem))
+    clamp(1.75rem, 5vw, 3.25rem);
+  background: linear-gradient(to right, var(--gold), var(--gold-soft) 55%, transparent);
+}
+
+/* Letterhead */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--ink);
+}
+.brand span {
+  color: var(--gold);
+}
+.orgMeta {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  max-width: 260px;
+}
+.orgMeta span {
+  display: block;
+}
+.headRight {
+  text-align: right;
+  flex: 0 0 auto;
+}
+.docLabel {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 0.75rem;
+}
+.metaRow {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 0.15rem 0;
+}
+.metaRow b {
+  color: var(--ink);
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+.chip {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.22rem 0.7rem;
+  border: 1px solid var(--gold-soft);
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.rule {
+  height: 1px;
+  background: var(--hair);
+  border: 0;
+  margin: 1.75rem 0;
+}
+
+/* Booking meta strip */
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.1rem 1.5rem;
+}
+.metaItem dt {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.25rem;
+}
+.metaItem dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Two-column checklist */
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 620px) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+}
+.col {
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+.colHead {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin: 0 0 0.15rem;
+}
+.colSub {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 1rem;
+}
+.empty {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-faint);
+  padding: 0.5rem 0;
+}
+
+/* Gauge row (odometer / fuel) */
+.readouts {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+.readout {
+  flex: 1;
+}
+.readoutLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.readoutValue {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+
+/* Checklist items */
+.group {
+  margin-bottom: 0.9rem;
+}
+.groupTitle {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.4rem;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.12rem 0;
+  color: var(--ink);
+}
+.box {
+  font-size: 1rem;
+  line-height: 1;
+  width: 1.1em;
+  display: inline-block;
+}
+.boxOn {
+  color: var(--gold);
+}
+.boxOff {
+  color: var(--ink-faint);
+}
+
+.noteBlock {
+  margin-top: 0.75rem;
+}
+.noteLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.noteBody {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  min-height: 1.5rem;
+}
+
+/* Signatures */
+.signs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 2.5rem;
+  margin-top: 0.5rem;
+}
+.sign {
+  text-align: center;
+}
+.signLine {
+  margin-top: 2.75rem;
+  border-top: 1px solid var(--ink-soft);
+  padding-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.signName {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.terms {
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+  margin: 1.75rem 0 0;
+  text-align: center;
+}
+
+/* Screen-only actions */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.missing {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+.missingLink {
+  color: var(--gold);
+  border-bottom: 1px solid var(--gold-soft);
+}
+
+/* ============================================================================
+   PRINT — isolate the paper.
+   ========================================================================== */
+@media print {
+  .page,
+  .paper {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  :global(.site-header),
+  :global(.site-footer),
+  :global(.cursor-dot),
+  :global(.cursor-ring),
+  :global([aria-label="Chat with us on WhatsApp"]),
+  .actions {
+    display: none !important;
+  }
+  :global(body) {
+    background: #fff !important;
+  }
+  :global(body)::after {
+    display: none !important;
+  }
+  .page {
+    display: block;
+    padding: 0;
+  }
+  .paper {
+    max-width: none;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .paper::before {
+    margin: 0 0 1.75rem;
+  }
+  .col {
+    break-inside: avoid;
+  }
+}

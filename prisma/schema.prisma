@@ -124,10 +124,54 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  payments Payment[]
+  payments   Payment[]
+  handovers  Handover[]
 
   @@index([carModelId, startAt, endAt])
   @@index([status])
+}
+
+// --- Serah-terima kendaraan (Berita Acara) ---
+
+enum HandoverPhase {
+  OUT // Pengambilan: serah unit ke penyewa
+  IN // Pengembalian: unit kembali dari penyewa
+}
+
+/// Checklist kondisi kendaraan saat serah-terima. Satu OUT + satu IN per booking.
+/// Dipakai untuk bukti kondisi (baret, KM, BBM) bila ada sengketa.
+model Handover {
+  id        String        @id @default(cuid())
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  bookingId String
+  phase     HandoverPhase
+
+  odometer    Int // KM pada speedometer
+  fuelEighths Int @default(8) // Level BBM 0..8 (E..F)
+
+  exteriorClean Boolean @default(true)
+  interiorClean Boolean @default(true)
+  tiresOk       Boolean @default(true)
+
+  // Kelengkapan standar
+  docStnk     Boolean @default(true) // STNK
+  spareTire   Boolean @default(true) // Ban serep
+  jack        Boolean @default(true) // Dongkrak + kunci roda
+  toolkit     Boolean @default(true) // Tool kit
+  firstAidKit Boolean @default(false) // P3K
+
+  accessories String[] // Ekstra: "Charger", "Dashcam", dll.
+  damageNotes String? // Catatan baret / penyok
+  notes       String? // Catatan lain
+
+  staffName        String?
+  signedByStaff    Boolean @default(false)
+  signedByCustomer Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookingId, phase])
 }
 
 // --- Pembayaran (ADR-0002 / Midtrans) ---

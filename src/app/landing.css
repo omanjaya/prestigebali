@@ -1006,3 +1006,189 @@ body.cursor-down .cursor-ring {
     display: none;
   }
 }
+
+/* ============================================================
+   Serah-terima kendaraan (Berita Acara) — halaman admin
+   ============================================================ */
+
+/* Ringkasan booking */
+.ho-summary {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 2fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.35rem 1.5rem;
+}
+.ho-summary-meta {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 1.25rem 2rem;
+  margin: 0;
+}
+.ho-summary-meta dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+.ho-summary-meta dd {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.ho-summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ho-summary-actions .btn {
+  white-space: nowrap;
+}
+
+/* Komparasi OUT vs IN */
+.ho-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.ho-compare-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1rem 1.2rem;
+}
+.ho-compare-flag {
+  border-left-color: var(--danger, #c66);
+}
+.ho-compare-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ho-compare-value {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+/* Dua form berdampingan */
+.ho-forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.ho-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.5rem;
+}
+.ho-card-done {
+  border-color: var(--border-strong);
+}
+.ho-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.ho-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.ho-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ho-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ho-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.ho-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem 1rem;
+  margin: 0;
+}
+.ho-fieldset legend {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0 0.4rem;
+}
+.ho-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+}
+.ho-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--text);
+}
+/* Reset checkbox agar tak kena style global input */
+.ho-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface-2);
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.ho-check input[type="checkbox"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: transform 0.12s ease;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.ho-check input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+.ho-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 780px) {
+  .ho-summary {
+    grid-template-columns: 1fr;
+  }
+  .ho-summary-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+}

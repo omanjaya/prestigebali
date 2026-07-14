@@ -103,6 +103,11 @@ export function BookingsTable({ bookings }: { bookings: BookingView[] }) {
                         </button>
                       </form>
                     ) : null}
+                    {["CONFIRMED", "ONGOING", "COMPLETED"].includes(b.status) ? (
+                      <Link href={`/admin/handover/${b.id}`} className="btn btn-sm btn-ghost">
+                        Handover
+                      </Link>
+                    ) : null}
                     {b.dpAmount != null ? (
                       <Link href={`/receipt/${b.id}`} className="btn btn-sm btn-ghost">
                         Receipt
