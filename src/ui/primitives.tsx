@@ -1,7 +1,8 @@
 // Primitives presentasi bersama (server-component friendly, tanpa hooks).
-// Semua halaman memakai ini agar visual konsisten. Kelas didefinisikan di globals.css.
+// Editorial Noir. Kelas di globals.css. API dijaga stabil (halaman lain tak berubah).
 
 import Link from "next/link";
+import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 
 export function Container({ children, style }: { children: ReactNode; style?: CSSProperties }) {
@@ -24,9 +25,33 @@ export function CardBody({ children }: { children: ReactNode }) {
   return <div className="card-body">{children}</div>;
 }
 
-/** Placeholder media gradien (foto Mobil belum ada). */
-export function CardMedia({ label }: { label: string }) {
-  return <div className="card-media">{label}</div>;
+/**
+ * Media Mobil: foto nyata (Next Image) bila `src` ada, jika tidak placeholder duotone
+ * elegan bertuliskan `label`. `sizes` menyesuaikan grid katalog.
+ */
+export function CardMedia({
+  label,
+  src,
+  priority,
+  sizes = "(max-width: 700px) 100vw, 33vw",
+}: {
+  label: string;
+  src?: string;
+  priority?: boolean;
+  sizes?: string;
+}) {
+  if (!src) {
+    return (
+      <div className="card-media card-media--empty">
+        <span>{label}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="card-media">
+      <Image src={src} alt={label} fill sizes={sizes} priority={priority} />
+    </div>
+  );
 }
 
 export function Badge({
@@ -47,7 +72,6 @@ function btnClass(variant: ButtonVariant): string {
   return "btn";
 }
 
-/** Tautan bergaya tombol (untuk navigasi). */
 export function ButtonLink({
   href,
   children,
@@ -81,11 +105,24 @@ export function Field({
   );
 }
 
-export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function PageHeader({
+  title,
+  subtitle,
+  kicker,
+}: {
+  title: string;
+  subtitle?: string;
+  kicker?: string;
+}) {
   return (
-    <div style={{ padding: "2rem 0 1rem" }}>
+    <div style={{ padding: "3rem 0 1.5rem" }}>
+      {kicker ? <div className="kicker" style={{ marginBottom: "0.75rem" }}>{kicker}</div> : null}
       <h1 style={{ margin: 0 }}>{title}</h1>
-      {subtitle ? <p className="muted" style={{ margin: "0.25rem 0 0" }}>{subtitle}</p> : null}
+      {subtitle ? (
+        <p className="muted" style={{ margin: "0.6rem 0 0", maxWidth: 560 }}>
+          {subtitle}
+        </p>
+      ) : null}
     </div>
   );
 }
