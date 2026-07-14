@@ -110,6 +110,74 @@
   height: 46px;
   background: var(--accent);
   display: block;
+  transform-origin: top;
+}
+
+/* ---- Entrance animations (robust: konten selalu terlihat sbg fallback) ---- */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes scroll-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero: entrance saat load (CSS murni, tak butuh JS) */
+  .hero-anim {
+    animation: rise-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hero-text .kicker.hero-anim {
+    animation-delay: 0.05s;
+  }
+  .hero-title.hero-anim {
+    animation-delay: 0.18s;
+  }
+  .hero-rule.hero-anim {
+    animation-delay: 0.34s;
+  }
+  .hero-sub.hero-anim {
+    animation-delay: 0.46s;
+  }
+  .hero-actions.hero-anim {
+    animation-delay: 0.58s;
+  }
+  .hero-scroll-line {
+    animation: scroll-pulse 2s ease-in-out infinite;
+  }
+
+  /* Section reveal: scroll-driven bila didukung; jika tidak → tetap terlihat (fallback) */
+  @supports (animation-timeline: view()) {
+    .reveal,
+    .stagger > * {
+      animation: rise-in both linear;
+      animation-timeline: view();
+      animation-range: entry 2% cover 20%;
+    }
+    .stagger > *:nth-child(2) {
+      animation-range: entry 7% cover 25%;
+    }
+    .stagger > *:nth-child(3) {
+      animation-range: entry 12% cover 30%;
+    }
+    .stagger > *:nth-child(4) {
+      animation-range: entry 17% cover 35%;
+    }
+  }
 }
 
 /* Brand marquee */

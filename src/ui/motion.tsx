@@ -1,51 +1,31 @@
-"use client";
+// Reveal helpers — CSS scroll-driven (lihat .reveal/.stagger di landing.css).
+// TIDAK bergantung JS untuk visibilitas: konten selalu ada & terlihat sebagai fallback
+// (mis. browser tanpa animation-timeline, reduced-motion, atau JS gagal). Animasi hanya
+// enhancement saat di-scroll. Ini menghindari "section blank" bila animasi tak jalan.
 
-// Helper animasi bersama (Framer Motion). Menghormati prefers-reduced-motion.
+import type { CSSProperties, ReactNode } from "react";
 
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
-
-const EASE = [0.2, 0.7, 0.2, 1] as const;
-
-/** Reveal fade+rise saat masuk viewport (sekali). */
 export function Reveal({
   children,
-  delay = 0,
-  y = 24,
   className,
   as = "div",
+  style,
 }: {
   children: ReactNode;
+  /** Diabaikan pada mode CSS scroll-driven; dipertahankan agar pemanggil lama tetap valid. */
   delay?: number;
   y?: number;
   className?: string;
   as?: "div" | "section" | "li" | "span";
+  style?: CSSProperties;
 }) {
-  const reduce = useReducedMotion();
-  const MotionTag = motion[as];
+  const Tag = as;
   return (
-    <MotionTag
-      className={className}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.7, ease: EASE, delay }}
-    >
+    <Tag className={className ? `reveal ${className}` : "reveal"} style={style}>
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
-
-/** Container untuk stagger anak-anaknya (pakai <StaggerItem/>). */
-export const staggerParent: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
-};
-
-export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 26 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
-};
 
 export function StaggerGroup({
   children,
@@ -54,19 +34,12 @@ export function StaggerGroup({
 }: {
   children: ReactNode;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }) {
   return (
-    <motion.div
-      className={className}
-      style={style}
-      variants={staggerParent}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-60px" }}
-    >
+    <div className={className ? `stagger ${className}` : "stagger"} style={style}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -77,13 +50,11 @@ export function StaggerItem({
 }: {
   children: ReactNode;
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }) {
   return (
-    <motion.div className={className} style={style} variants={staggerItem}>
+    <div className={className} style={style}>
       {children}
-    </motion.div>
+    </div>
   );
 }
-
-export { motion };

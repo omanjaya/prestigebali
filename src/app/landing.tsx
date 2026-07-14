@@ -59,99 +59,55 @@ export function Landing({
   );
 }
 
-/* ----------------------------- Hero ----------------------------- */
+/* ----------------------------- Hero -----------------------------
+   Konten (teks) selalu terlihat; entrance via CSS (.hero-anim di landing.css) — tak
+   bergantung JS. Parallax gambar (Framer) hanya enhancement; gambar tetap tampil bila
+   JS/parallax tak jalan. */
 function Hero() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1.08, 1.2]);
-  const overlay = useTransform(scrollYProgress, [0, 1], [0.55, 0.85]);
-
-  const lines = ["The art", "of arriving."];
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1.06, 1.16]);
 
   return (
     <section className="hero" ref={ref}>
       <motion.div className="hero-media" style={reduce ? undefined : { y, scale }}>
         <Image src={HERO_IMG} alt="Luxury supercar" fill priority sizes="100vw" />
       </motion.div>
-      <motion.div className="hero-scrim" style={reduce ? undefined : { opacity: overlay }} />
+      <div className="hero-scrim" />
 
       <div className="hero-content">
         <div className="container">
           <div className="hero-text">
-            <motion.span
-              className="kicker"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 0.1 }}
-            >
-              Luxury Car Rental · Jakarta
-            </motion.span>
-
-            <h1 className="hero-title">
-              {lines.map((line, i) => (
-                <span key={line} className="hero-line">
-                  <motion.span
-                    initial={{ y: "110%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 0.9, ease: EASE, delay: 0.25 + i * 0.12 }}
-                    style={{ display: "block" }}
-                  >
-                    {line}
-                  </motion.span>
-                </span>
-              ))}
+            <span className="kicker hero-anim">Luxury Car Rental · Jakarta</span>
+            <h1 className="hero-title hero-anim">
+              The art
+              <br />
+              of arriving.
             </h1>
-
-            <motion.div
-              className="hero-rule"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.8, ease: EASE, delay: 0.7 }}
-            />
-
-            <motion.p
-              className="muted hero-sub"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 0.8 }}
-            >
+            <div className="hero-rule hero-anim" />
+            <p className="muted hero-sub hero-anim">
               A curated fleet of supercars, sedans, SUVs and premium MPVs. Choose{" "}
               <strong>Self-Drive</strong> for the freedom of the road, or <strong>Chauffeur</strong>{" "}
               for effortless luxury.
-            </motion.p>
-
-            <motion.div
-              className="row hero-actions"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: EASE, delay: 0.95 }}
-            >
+            </p>
+            <div className="row hero-actions hero-anim">
               <Link href="#collection" className="btn btn-primary">
                 Explore the Fleet <Icon name="arrow" size={16} />
               </Link>
               <Link href="#modes" className="btn">
                 Ways to Ride
               </Link>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
 
-      <motion.div
-        className="hero-scroll"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-      >
+      <div className="hero-scroll">
         <span className="eyebrow">Scroll</span>
-        <motion.span
-          className="hero-scroll-line"
-          animate={{ scaleY: [0.3, 1, 0.3], originY: 0 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </motion.div>
+        <span className="hero-scroll-line" />
+      </div>
     </section>
   );
 }
@@ -262,7 +218,8 @@ function Collection({
       </Reveal>
 
       <motion.div layout className="grid car-grid">
-        <AnimatePresence mode="popLayout">
+        {/* initial={false}: kartu langsung tampil saat load; animasi hanya saat filter berubah. */}
+        <AnimatePresence mode="popLayout" initial={false}>
           {filtered.map((car) => (
             <motion.div
               key={car.id}
@@ -434,6 +391,12 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
     });
     return () => controls.stop();
   }, [inView, value, reduce]);
+
+  // Jaring pengaman: bila observer/animasi tak jalan, tampilkan nilai akhir (jangan macet di 0).
+  useEffect(() => {
+    const t = setTimeout(() => setN((cur) => (cur === 0 ? value : cur)), 1800);
+    return () => clearTimeout(t);
+  }, [value]);
 
   return (
     <div ref={ref} className="stat-item">
