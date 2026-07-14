@@ -301,21 +301,10 @@
     print-color-adjust: exact;
   }
 
-  /* Hide the dark site chrome + on-screen-only affordances */
-  :global(.site-header),
-  :global(.site-footer),
-  :global(.cursor-dot),
-  :global(.cursor-ring),
-  :global([aria-label="Chat with us on WhatsApp"]),
+  /* On-screen-only affordance. Global chrome (header/footer/cursor/FAB) and the
+     white page background are handled by the scoped print rules in globals.css
+     (targeting .print-doc) — CSS Modules can't hold purely-global selectors. */
   .actions {
-    display: none !important;
-  }
-
-  /* Kill the page's dark background & ambient grain so paper prints clean */
-  :global(body) {
-    background: #fff !important;
-  }
-  :global(body)::after {
     display: none !important;
   }
 

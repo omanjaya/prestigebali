@@ -303,18 +303,8 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  :global(.site-header),
-  :global(.site-footer),
-  :global(.cursor-dot),
-  :global(.cursor-ring),
-  :global([aria-label="Chat with us on WhatsApp"]),
+  /* Global chrome + white page bg handled by globals.css (.print-doc scope). */
   .actions {
-    display: none !important;
-  }
-  :global(body) {
-    background: #fff !important;
-  }
-  :global(body)::after {
     display: none !important;
   }
   .page {

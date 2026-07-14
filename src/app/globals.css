@@ -517,3 +517,26 @@ textarea:focus {
     transition: none !important;
   }
 }
+
+/* ============================================================
+   Print isolation untuk dokumen "kertas" (kwitansi & Berita Acara).
+   Hanya aktif di halaman yang merender elemen .print-doc, sehingga
+   halaman lain tak terpengaruh. Aturan ini menyentuh elemen GLOBAL
+   (header/footer/cursor/FAB/body) jadi harus di stylesheet global,
+   bukan di *.module.css (yang wajib pure/scoped).
+   ============================================================ */
+@media print {
+  body:has(.print-doc) {
+    background: #fff !important;
+  }
+  body:has(.print-doc)::after {
+    display: none !important; /* matikan grain */
+  }
+  body:has(.print-doc) .site-header,
+  body:has(.print-doc) .site-footer,
+  body:has(.print-doc) .cursor-dot,
+  body:has(.print-doc) .cursor-ring,
+  body:has(.print-doc) [aria-label="Chat with us on WhatsApp"] {
+    display: none !important;
+  }
+}

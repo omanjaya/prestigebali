@@ -15,7 +15,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   if (!b) {
     return (
       <div className={styles.page}>
-        <div className={`${styles.paper} ${styles.missing}`}>
+        <div className={`${styles.paper} ${styles.missing} print-doc`}>
           <p className={styles.docLabel}>Receipt</p>
           <h1 className={styles.brand} style={{ marginBottom: "0.75rem" }}>
             Receipt not found
@@ -39,7 +39,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   return (
     <div className={styles.page}>
       <div>
-        <article className={styles.paper}>
+        <article className={`${styles.paper} print-doc`}>
           {/* Letterhead */}
           <header className={styles.head}>
             <div>

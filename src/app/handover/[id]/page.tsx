@@ -118,7 +118,7 @@ export default async function HandoverPrintPage({
   if (!booking) {
     return (
       <div className={styles.page}>
-        <div className={`${styles.paper} ${styles.missing}`}>
+        <div className={`${styles.paper} ${styles.missing} print-doc`}>
           <p className={styles.docLabel}>Serah Terima</p>
           <h1 className={styles.brand} style={{ marginBottom: "0.75rem" }}>
             Dokumen tidak ditemukan
@@ -139,7 +139,7 @@ export default async function HandoverPrintPage({
   return (
     <div className={styles.page}>
       <div>
-        <article className={styles.paper}>
+        <article className={`${styles.paper} print-doc`}>
           <header className={styles.head}>
             <div>
               <h1 className={styles.brand}>
