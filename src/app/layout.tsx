@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import "./landing.css";
 import { SiteHeader } from "@/ui/site-header";
@@ -7,10 +7,11 @@ import { SmoothScroll } from "@/ui/smooth-scroll";
 import { CustomCursor } from "@/ui/custom-cursor";
 import Link from "next/link";
 
-// Editorial Noir: serif display + sans bersih (maks 2 typeface).
-const display = Playfair_Display({
+// Warm Noir: Fraunces (serif display hangat/berkarakter) + Inter (body bersih).
+const display = Fraunces({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
 });

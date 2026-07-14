@@ -6,19 +6,19 @@
    ========================================================================== */
 
 :root {
-  /* Palet */
-  --bg: #0c0c0e; /* ink */
-  --surface: #131316;
-  --surface-2: #17171b;
-  --border: #26262b; /* hairline */
-  --border-strong: #33333a;
-  --text: #ece7dd; /* ivory (bukan putih murni) */
-  --muted: #928e85; /* warm gray */
-  --muted-dim: #6a675f;
-  --accent: #c5a24d; /* emas matte — HEMAT */
-  --accent-hi: #d8bd77;
-  --accent-soft: rgba(197, 162, 77, 0.12);
-  --danger: #c96a5f;
+  /* Palet — Warm Noir (hitam hangat/espresso, emas antik) */
+  --bg: #100d0a; /* warm near-black */
+  --surface: #17130f;
+  --surface-2: #1e1812;
+  --border: #2c251d; /* hairline hangat */
+  --border-strong: #3a3127;
+  --text: #ede7da; /* ivory hangat */
+  --muted: #9c9284; /* warm gray */
+  --muted-dim: #6e655a;
+  --accent: #c6a052; /* emas antik hangat — HEMAT */
+  --accent-hi: #dcc17b;
+  --accent-soft: rgba(198, 160, 82, 0.12);
+  --danger: #cd6f63;
   --ok: #8faf7a;
 
   /* Bentuk */
@@ -46,6 +46,34 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Warm ambient: glow emas sangat samar di puncak halaman (kedalaman, bukan flat) */
+body {
+  background-image: radial-gradient(
+    120% 60% at 50% -10%,
+    rgba(198, 160, 82, 0.06),
+    transparent 60%
+  );
+  background-attachment: fixed;
+}
+
+/* Film grain halus — menghilangkan kesan digital-flat (opacity sangat rendah) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    display: none;
+  }
 }
 
 a {
@@ -218,8 +246,8 @@ p {
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(to top, rgba(12, 12, 14, 0.96) 8%, rgba(12, 12, 14, 0.25) 55%, rgba(12, 12, 14, 0.55) 100%),
-    linear-gradient(to right, rgba(12, 12, 14, 0.7), transparent 60%);
+    linear-gradient(to top, rgba(16, 13, 10, 0.96) 8%, rgba(16, 13, 10, 0.25) 55%, rgba(16, 13, 10, 0.55) 100%),
+    linear-gradient(to right, rgba(16, 13, 10, 0.72), transparent 60%);
 }
 .hero-content {
   position: relative;

@@ -509,6 +509,12 @@
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   padding: clamp(2.5rem, 6vw, 4rem) 0;
+  /* Panel sedikit lebih hangat → jeda tonal (tak rata dgn section lain) */
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface) 75%, var(--bg)),
+    var(--bg)
+  );
 }
 .stats-grid {
   display: grid;
@@ -540,7 +546,33 @@
 .cta-band {
   padding: clamp(5rem, 11vw, 9rem) var(--gutter);
   text-align: center;
-  background: radial-gradient(120% 140% at 50% 0%, rgba(197, 162, 77, 0.08), transparent 60%);
+  background:
+    radial-gradient(130% 150% at 50% 0%, rgba(198, 160, 82, 0.1), transparent 62%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--surface) 55%, var(--bg)), var(--bg));
+}
+
+/* Glow ambient hangat samar untuk memecah stretch gelap panjang (ritme tonal) */
+#experience,
+#modes {
+  position: relative;
+}
+#experience::before,
+#modes::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1000px, 92%);
+  height: 340px;
+  background: radial-gradient(58% 100% at 50% 0%, rgba(198, 160, 82, 0.05), transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+#experience > *,
+#modes > * {
+  position: relative;
+  z-index: 1;
 }
 .cta-inner {
   max-width: 640px;
