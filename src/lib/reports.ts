@@ -1,8 +1,14 @@
 // Agregasi laporan admin (PRD): Pendapatan, Booking per Mobil & Mode, Utilisasi armada,
 // Pembayaran Tertunda. Dihitung dari data DB (listBookings + listCarModels).
+//
+// Semua fungsi menerima parameter `filter` OPSIONAL (backward-compatible: tanpa
+// argumen = perilaku lama, tanpa filter). Ketika filter diberikan, SELURUH angka
+// (pendapatan, per-mobil, mode, utilisasi, pembayaran tertunda) dihitung ulang dari
+// himpunan Booking yang sudah disaring — lihat matchesFilter().
 
 import { listBookings, type BookingView } from "@/lib/bookings";
 import { listCarModels } from "@/lib/catalog";
+import type { BookingStatus, RentalMode } from "@/domain/booking/booking";
 
 const DAY_MS = 86_400_000;
 
@@ -14,6 +20,35 @@ function bookingRevenue(b: BookingView): number {
 }
 function rentalDays(b: BookingView): number {
   return Math.max(1, Math.round((b.endAt.getTime() - b.startAt.getTime()) / DAY_MS));
+}
+
+/**
+ * Filter opsional untuk semua agregasi report.
+ *
+ * `from`/`to` memakai semantik OVERLAP terhadap periode sewa Booking
+ * (startAt..endAt) — bukan createdAt — supaya laporan revenue/utilisasi
+ * mencerminkan Booking yang AKTIF pada jendela waktu yang dipilih (mis. "berapa
+ * banyak sewa berjalan bulan ini"), bukan hanya yang *dibuat* pada rentang itu.
+ * Sebuah Booking lolos bila periode sewanya beririsan dengan [from, to].
+ */
+export interface ReportFilter {
+  from?: Date;
+  to?: Date;
+  mode?: RentalMode;
+  status?: BookingStatus;
+  carModelId?: string;
+}
+
+function matchesFilter(b: BookingView, filter?: ReportFilter): boolean {
+  if (!filter) return true;
+  if (filter.mode && b.mode !== filter.mode) return false;
+  if (filter.status && b.status !== filter.status) return false;
+  if (filter.carModelId && b.carModelId !== filter.carModelId) return false;
+  // Overlap: booking berakhir sebelum jendela mulai, atau mulai setelah jendela
+  // berakhir → tidak beririsan, buang.
+  if (filter.from && b.endAt.getTime() < filter.from.getTime()) return false;
+  if (filter.to && b.startAt.getTime() > filter.to.getTime()) return false;
+  return true;
 }
 
 export interface CarReportRow {
@@ -51,8 +86,15 @@ export interface ReportData {
   generatedAt: Date;
 }
 
-export async function getReports(now: Date = new Date()): Promise<ReportData> {
-  const [bookings, cars] = await Promise.all([listBookings(), listCarModels()]);
+export async function getReports(
+  now: Date = new Date(),
+  filter?: ReportFilter,
+): Promise<ReportData> {
+  const [allBookings, allCars] = await Promise.all([listBookings(), listCarModels()]);
+
+  const bookings = allBookings.filter((b) => matchesFilter(b, filter));
+  // Bila carModelId difilter, hanya tampilkan Mobil itu di tabel per-mobil/utilisasi.
+  const cars = filter?.carModelId ? allCars.filter((c) => c.id === filter.carModelId) : allCars;
 
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
   const revenueBearing = bookings.filter(isRevenueBearing);

@@ -66,6 +66,12 @@ export interface BookingServiceConfig {
   holdTimeoutMinutes: number;
   /** Biaya admin yang dipotong dari refund penuh (tier ≥H-7, ADR-0004). */
   refundAdminFee: Money;
+  /**
+   * Berapa hari Buffer wajib setelah tiap Booking sebelum slot Stok yang sama bisa
+   * dipakai lagi (CONTEXT.md — default 1 hari). Opsional agar config literal lama
+   * (mis. di test) tetap kompatibel; bila tidak diisi dianggap 0 (tanpa Buffer).
+   */
+  bufferDays?: number;
 }
 
 export interface BookingServiceDeps {

@@ -480,6 +480,75 @@ describe("Notifikasi (ADR-0003)", () => {
   });
 });
 
+describe("allocateUnit (US 39 — Alokasi Unit)", () => {
+  it("dari CONFIRMED: sukses set allocatedUnitId, status tidak berubah", async () => {
+    const booking = await confirmedChauffeur();
+
+    const allocated = await service.allocateUnit({ bookingId: booking.id, unitId: "unit-1" });
+
+    expect(allocated.status).toBe("CONFIRMED");
+    expect(allocated.allocatedUnitId).toBe("unit-1");
+    const stored = await repository.findById(booking.id);
+    expect(stored?.allocatedUnitId).toBe("unit-1");
+  });
+
+  it("dari ONGOING: sukses (re-alokasi juga sah)", async () => {
+    const booking = await confirmedChauffeur();
+    await service.allocateUnit({ bookingId: booking.id, unitId: "unit-1" });
+    await service.markOngoing({ bookingId: booking.id });
+
+    const reallocated = await service.allocateUnit({ bookingId: booking.id, unitId: "unit-2" });
+
+    expect(reallocated.status).toBe("ONGOING");
+    expect(reallocated.allocatedUnitId).toBe("unit-2");
+  });
+
+  it("menolak allocateUnit dari REQUESTED (belum konfirmasi)", async () => {
+    const booking = await createChauffeurBooking(); // REQUESTED
+
+    await expect(
+      service.allocateUnit({ bookingId: booking.id, unitId: "unit-1" }),
+    ).rejects.toThrow(InvalidTransitionError);
+  });
+});
+
+describe("Buffer (US 47) — jeda wajib antar Booking pada perhitungan ketersediaan", () => {
+  it("Booking back-to-back (mulai tepat setelah endAt Booking lain) DITOLAK dengan bufferDays: 1", async () => {
+    const svc = createBookingService({
+      clock,
+      paymentGateway: payments,
+      notifications,
+      repository,
+      fleet,
+      config: { holdTimeoutMinutes: 60, refundAdminFee: 0, bufferDays: 1 },
+    });
+    fleet.setStock("car-1", 1);
+    await svc.createBooking({ carModelId: "car-1", customerId: "a", mode: "CHAUFFEUR", period: PERIOD });
+
+    // Mulai tepat pada endAt Booking pertama (back-to-back, tanpa jeda).
+    const backToBack = { startAt: PERIOD.endAt, endAt: new Date(PERIOD.endAt.getTime() + 86_400_000) };
+
+    await expect(
+      svc.createBooking({ carModelId: "car-1", customerId: "b", mode: "CHAUFFEUR", period: backToBack }),
+    ).rejects.toThrow(NoAvailabilityError);
+  });
+
+  it("Booking back-to-back yang SAMA diterima dengan bufferDays: 0 (config default test)", async () => {
+    fleet.setStock("car-1", 1);
+    await service.createBooking({ carModelId: "car-1", customerId: "a", mode: "CHAUFFEUR", period: PERIOD });
+
+    const backToBack = { startAt: PERIOD.endAt, endAt: new Date(PERIOD.endAt.getTime() + 86_400_000) };
+
+    const booking = await service.createBooking({
+      carModelId: "car-1",
+      customerId: "b",
+      mode: "CHAUFFEUR",
+      period: backToBack,
+    });
+    expect(booking.status).toBe("REQUESTED");
+  });
+});
+
 describe("markOngoing / markCompleted", () => {
   it("CONFIRMED → ONGOING → COMPLETED", async () => {
     const booking = await confirmedChauffeur();

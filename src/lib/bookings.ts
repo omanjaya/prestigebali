@@ -17,8 +17,22 @@ export interface BookingView {
   endAt: Date;
   dpAmount?: number;
   settlementAmount?: number;
+  /** Kode Promo yang dipakai + potongan (snapshot saat booking dibuat). */
+  promoCode?: string;
+  discountAmount?: number;
+  /** Deposit jaminan (Lepas Kunci) — snapshot; ditagih bersama DP, refundable. */
+  depositAmount?: number;
   /** "Hitam · B 100 ALP" bila admin sudah meng-Alokasi Unit. */
   allocatedUnit?: string;
+  /** Id Unit teralokasi (mentah) — untuk pra-pilih di form Alokasi admin. */
+  allocatedUnitId?: string;
+  /** Kapan Hold Stok kedaluwarsa (untuk countdown di halaman status). */
+  holdExpiresAt?: Date;
+  /** Verifikasi Pengemudi (Lepas Kunci) — data SIM/KTP yang dikirim pelanggan. */
+  licenseName?: string;
+  licenseNumber?: string;
+  ktpNumber?: string;
+  verificationSubmittedAt?: Date;
   createdAt: Date;
 }
 
@@ -43,11 +57,42 @@ function toView(row: Row): BookingView {
     endAt: row.endAt,
     dpAmount: row.dpAmount ?? undefined,
     settlementAmount: row.settlementAmount ?? undefined,
+    promoCode: row.promoCode ?? undefined,
+    discountAmount: row.discountAmount ?? undefined,
+    depositAmount: row.depositAmount ?? undefined,
     allocatedUnit: row.allocatedUnit
       ? `${row.allocatedUnit.color} · ${row.allocatedUnit.plate}`
       : undefined,
+    allocatedUnitId: row.allocatedUnitId ?? undefined,
+    holdExpiresAt: row.holdExpiresAt ?? undefined,
+    licenseName: row.licenseName ?? undefined,
+    licenseNumber: row.licenseNumber ?? undefined,
+    ktpNumber: row.ktpNumber ?? undefined,
+    verificationSubmittedAt: row.verificationSubmittedAt ?? undefined,
     createdAt: row.createdAt,
   };
+}
+
+/**
+ * Simpan data Verifikasi Pengemudi (SIM/KTP) yang dikirim Pelanggan pada Booking
+ * Lepas Kunci. Menandai `verificationSubmittedAt` agar admin tahu data siap ditinjau.
+ * Prototype fase 1: teks saja (tanpa unggah berkas).
+ */
+export async function saveDriverVerification(input: {
+  bookingId: string;
+  licenseName: string;
+  licenseNumber: string;
+  ktpNumber: string;
+}): Promise<void> {
+  await prisma.booking.update({
+    where: { id: input.bookingId },
+    data: {
+      licenseName: input.licenseName,
+      licenseNumber: input.licenseNumber,
+      ktpNumber: input.ktpNumber,
+      verificationSubmittedAt: new Date(),
+    },
+  });
 }
 
 /** Daftar Booking terbaru (untuk panel Admin). */
@@ -58,6 +103,46 @@ export async function listBookings(): Promise<BookingView[]> {
     take: 100,
   });
   return rows.map(toView);
+}
+
+export interface BookingSearchFilter {
+  /** Cari di kode booking, nama, atau nomor HP pelanggan (case-insensitive). */
+  q?: string;
+  status?: BookingStatus;
+  page?: number; // 1-based
+  pageSize?: number; // default 25
+}
+
+/** Pencarian + pagination Booking untuk dashboard admin. */
+export async function searchBookings(
+  filter?: BookingSearchFilter,
+): Promise<{ rows: BookingView[]; total: number; page: number; pageSize: number }> {
+  const page = Math.max(1, filter?.page ?? 1);
+  const pageSize = Math.min(100, Math.max(5, filter?.pageSize ?? 25));
+  const q = filter?.q?.trim();
+  const where = {
+    ...(filter?.status ? { status: filter.status } : {}),
+    ...(q
+      ? {
+          OR: [
+            { id: { contains: q, mode: "insensitive" as const } },
+            { customer: { name: { contains: q, mode: "insensitive" as const } } },
+            { customer: { phone: { contains: q } } },
+          ],
+        }
+      : {}),
+  };
+  const [total, rows] = await Promise.all([
+    prisma.booking.count({ where }),
+    prisma.booking.findMany({
+      where,
+      include: INCLUDE,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+  return { rows: rows.map(toView), total, page, pageSize };
 }
 
 export async function getBooking(id: string): Promise<BookingView | undefined> {

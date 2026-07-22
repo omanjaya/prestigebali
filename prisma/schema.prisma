@@ -52,6 +52,7 @@ model CarModel {
   stock             Int      @default(1)
   dailyRate         Int? // Tarif Harian (Lepas Kunci)
   chauffeurPackage  Int? // Paket 12 Jam (Pakai Sopir)
+  securityDeposit   Int? // Deposit jaminan (Lepas Kunci) — refundable, ditagih saat checkout
   createdAt         DateTime @default(now())
 
   units    CarUnit[]
@@ -121,6 +122,21 @@ model Booking {
   dpAmount         Int?
   settlementAmount Int?
 
+  // Kode Promo — snapshot saat Booking dibuat (kode & potongan tidak berubah walau
+  // promo diedit/dinonaktifkan admin belakangan).
+  promoCode      String?
+  discountAmount Int?
+  // Deposit jaminan (Lepas Kunci) — snapshot dari CarModel.securityDeposit saat booking;
+  // ditagih bersama DP, dikembalikan setelah Unit kembali (refund manual fase 1).
+  depositAmount  Int?
+
+  // Verifikasi Pengemudi (Lepas Kunci) — data SIM/KTP untuk ditinjau admin sebelum
+  // approve. Prototype fase 1: disimpan sebagai teks (tanpa unggah berkas/blob).
+  licenseName             String? // Nama sesuai SIM
+  licenseNumber           String? // Nomor SIM
+  ktpNumber               String? // Nomor KTP
+  verificationSubmittedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -180,6 +196,7 @@ enum PaymentKind {
   DP
   SETTLEMENT
   REFUND
+  DEPOSIT // Deposit jaminan (refundable) — Lepas Kunci
 }
 
 enum PaymentStatus {
@@ -200,6 +217,44 @@ model Payment {
   createdAt  DateTime      @default(now())
 }
 
+// --- Kode Promo ---
+
+enum PromoKind {
+  PERCENT // value = persen potongan (1..100) dari total sewa
+  FIXED // value = potongan rupiah tetap
+}
+
+/// Kode Promo — dibuat & dibagikan admin (via chat/WA); tidak dipublikasikan.
+/// Divalidasi saat Booking dibuat; potongan di-snapshot ke Booking.discountAmount.
+model PromoCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  kind      PromoKind
+  value     Int
+  active    Boolean   @default(true)
+  expiresAt DateTime?
+  maxUses   Int?
+  usedCount Int       @default(0)
+  note      String? // catatan internal admin (mis. "promo musim panas IG")
+  createdAt DateTime  @default(now())
+}
+
+// --- Blog ---
+
+/// Artikel blog — dikelola admin (CRUD), tampil publik di /blog bila published.
+model Post {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  coverImage  String?
+  body        String // markdown sederhana / paragraf teks
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 // --- Chat & notifikasi ---
 
 model Conversation {
@@ -218,7 +273,19 @@ model Message {
   conversationId String
   senderRole     Role
   body           String
+  /** Kapan pesan dibaca pihak lawan (penanda unread). Null = belum dibaca. */
+  readAt         DateTime?
   createdAt      DateTime     @default(now())
+}
+
+// --- Pengaturan (Config UI, US42) ---
+
+/// Key-value pengaturan yang bisa diubah admin tanpa restart: holdTimeoutMinutes,
+/// bufferDays, refundAdminFee, rate.USD/RUB/CNY/AUD. Fallback ke env/konstanta kode.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 enum NotificationChannel {

@@ -26,6 +26,8 @@ export interface CarModelView {
   dailyRate?: number;
   /** Paket 12 Jam (Pakai Sopir), rupiah. */
   chauffeurPackage?: number;
+  /** Deposit jaminan (Lepas Kunci), rupiah — refundable, ditagih saat checkout. */
+  securityDeposit?: number;
   stock: number;
 }
 
@@ -40,6 +42,7 @@ type CarModelRow = {
   photos: string[];
   dailyRate: number | null;
   chauffeurPackage: number | null;
+  securityDeposit: number | null;
   stock: number;
 };
 
@@ -55,6 +58,7 @@ function toView(row: CarModelRow): CarModelView {
     photos: row.photos,
     dailyRate: row.dailyRate ?? undefined,
     chauffeurPackage: row.chauffeurPackage ?? undefined,
+    securityDeposit: row.securityDeposit ?? undefined,
     stock: row.stock,
   };
 }

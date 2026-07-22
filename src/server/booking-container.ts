@@ -11,6 +11,7 @@ import { PrismaBookingRepository } from "@/infra/prisma/prisma-booking-repositor
 import { PrismaCarModelReader } from "@/infra/prisma/prisma-car-model-reader";
 import { createMidtransPaymentGateway } from "@/infra/midtrans/midtrans-payment-gateway";
 import { createNotificationSenderFromEnv } from "@/infra/notifications/multi-channel-notification-sender";
+import { getNumberSettingSync } from "@/lib/settings";
 
 let cachedService: BookingService | undefined;
 
@@ -23,9 +24,18 @@ export function getBookingService(): BookingService {
     fleet: new PrismaCarModelReader(),
     paymentGateway: createMidtransPaymentGateway(),
     notifications: createNotificationSenderFromEnv(),
+    // Getter: nilai dibaca ULANG tiap akses dari cache Settings (DB, diubah admin
+    // tanpa restart) dengan fallback env — lihat lib/settings.getNumberSettingSync.
     config: {
-      holdTimeoutMinutes: Number(process.env.HOLD_TIMEOUT_MINUTES ?? 60),
-      refundAdminFee: Number(process.env.REFUND_ADMIN_FEE ?? 0),
+      get holdTimeoutMinutes() {
+        return getNumberSettingSync("holdTimeoutMinutes");
+      },
+      get refundAdminFee() {
+        return getNumberSettingSync("refundAdminFee");
+      },
+      get bufferDays() {
+        return getNumberSettingSync("bufferDays");
+      },
     },
   };
 

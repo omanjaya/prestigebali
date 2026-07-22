@@ -39,6 +39,8 @@ export interface BookingService {
   reschedule(input: { bookingId: string; period: RentalPeriod }): Promise<Booking>;
   markOngoing(input: { bookingId: string }): Promise<Booking>;
   markCompleted(input: { bookingId: string }): Promise<Booking>;
+  /** Admin meng-Alokasi Unit fisik ke Booking (menjelang hari-H). Tidak memengaruhi Stok. */
+  allocateUnit(input: { bookingId: string; unitId: string }): Promise<Booking>;
   /** Job sweep: ubah Booking REQUESTED yang Hold-nya kedaluwarsa → EXPIRED, lepas Stok. */
   expireStaleHolds(): Promise<Booking[]>;
   /** Apakah Mobil tersedia pada periode (Stok − aktif − Hold, termasuk Buffer). */
@@ -51,6 +53,9 @@ const BEFORE_RUNNING: ReadonlySet<Booking["status"]> = new Set([
   "AWAITING_APPROVAL",
   "CONFIRMED",
 ]);
+
+/** Status yang boleh menerima Alokasi Unit — menjelang/berjalan hari-H (US 39). */
+const ALLOCATABLE: ReadonlySet<Booking["status"]> = new Set(["CONFIRMED", "ONGOING"]);
 
 /** Offset WIB (Asia/Jakarta, UTC+7) dalam milidetik. */
 const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
@@ -86,9 +91,16 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
   ): Promise<boolean> {
     const stock = await fleet.getStock(carModelId);
     if (stock === null) return false;
+    // Lebarkan periode dengan Buffer (CONTEXT.md) di kedua sisi: secara matematis setara
+    // mewajibkan jeda `buffer` antar Booking, tanpa mengubah query overlap di repository.
+    const bufferMs = (config.bufferDays ?? 0) * 86_400_000;
+    const bufferedPeriod: RentalPeriod = {
+      startAt: new Date(period.startAt.getTime() - bufferMs),
+      endAt: new Date(period.endAt.getTime() + bufferMs),
+    };
     const active = await repository.countActiveForModel({
       carModelId,
-      period,
+      period: bufferedPeriod,
       now: clock.now(),
       excludeBookingId,
     });
@@ -288,6 +300,20 @@ export function createBookingService(deps: BookingServiceDeps): BookingService {
         );
       }
       const updated: Booking = { ...booking, status: "COMPLETED" };
+      await repository.save(updated);
+      return updated;
+    },
+    async allocateUnit({ bookingId, unitId }) {
+      const booking = await repository.findById(bookingId);
+      if (!booking) throw new InvalidTransitionError(`Booking ${bookingId} tidak ditemukan`);
+      // Alokasi hanya sah setelah konfirmasi, menjelang/berjalan hari-H (US 39). Boleh
+      // re-alokasi (ganti Unit) berkali-kali selama status masih valid.
+      if (!ALLOCATABLE.has(booking.status)) {
+        throw new InvalidTransitionError(
+          `allocateUnit hanya sah dari CONFIRMED/ONGOING, bukan ${booking.status}`,
+        );
+      }
+      const updated: Booking = { ...booking, allocatedUnitId: unitId };
       await repository.save(updated);
       return updated;
     },
