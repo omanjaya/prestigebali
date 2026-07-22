@@ -60,6 +60,7 @@ export async function saveCar(_prevState: CarFormState, formData: FormData): Pro
   const stock = parseIntOrNull(formData.get("stock"));
   const dailyRate = parseIntOrNull(formData.get("dailyRate"));
   const chauffeurPackage = parseIntOrNull(formData.get("chauffeurPackage"));
+  const securityDeposit = parseIntOrNull(formData.get("securityDeposit"));
   const photos = parsePhotos(formData.get("photos"));
 
   // Validasi field wajib.
@@ -84,6 +85,7 @@ export async function saveCar(_prevState: CarFormState, formData: FormData): Pro
     stock,
     dailyRate,
     chauffeurPackage,
+    securityDeposit,
   };
 
   try {

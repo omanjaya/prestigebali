@@ -66,7 +66,7 @@ export function HandoverForm({
         {v ? <span className="badge badge-ok">Tersimpan</span> : null}
       </div>
 
-      <div className="ho-grid2">
+      <div className="admin-form-grid">
         <label className="ho-field">
           <span className="ho-label">Odometer (KM)</span>
           <input
@@ -144,7 +144,7 @@ export function HandoverForm({
         <textarea name="notes" rows={2} defaultValue={v?.notes ?? ""} />
       </label>
 
-      <div className="ho-grid2">
+      <div className="admin-form-grid">
         <label className="ho-field">
           <span className="ho-label">Nama petugas</span>
           <input type="text" name="staffName" defaultValue={v?.staffName ?? ""} />
@@ -162,7 +162,11 @@ export function HandoverForm({
         </div>
       </div>
 
-      <button type="submit" className="btn btn-primary" style={{ marginTop: "0.5rem" }}>
+      <button
+        type="submit"
+        className="btn btn-primary ho-submit"
+        style={{ marginTop: "0.5rem" }}
+      >
         {v ? "Perbarui" : "Simpan"} {PHASE_TITLE[phase].toLowerCase()}
       </button>
     </form>

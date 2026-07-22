@@ -12,6 +12,7 @@
 import { revalidatePath } from "next/cache";
 import { getBookingService } from "@/server/booking-container";
 import { auth, signOut } from "@/auth";
+import { InvalidTransitionError } from "@/domain/booking/errors";
 
 /** Otorisasi: setiap aksi mutasi wajib sesi Admin (Server Action = endpoint POST). */
 async function requireAdmin(): Promise<void> {
@@ -54,17 +55,104 @@ export async function cancelBooking(formData: FormData): Promise<void> {
   revalidatePath("/admin");
 }
 
-/** Alokasi unit fisik ke Booking CONFIRMED. */
+/** Alokasi unit fisik ke Booking CONFIRMED atau ONGOING. */
 export async function allocateUnit(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const bookingId = String(formData.get("bookingId") ?? "");
+  const unitId = String(formData.get("unitId") ?? "");
+  if (!bookingId || !unitId) return;
+  try {
+    await getBookingService().allocateUnit({ bookingId, unitId });
+  } catch (error) {
+    // TODO: tampilkan error ke UI (butuh DB untuk eksekusi nyata).
+    console.error("allocateUnit gagal", error);
+  }
+  revalidatePath("/admin");
+}
+
+/** Mulai sewa: CONFIRMED → ONGOING (mobil sudah diserahterimakan ke pelanggan). */
+export async function markOngoing(formData: FormData): Promise<void> {
   await requireAdmin();
   const bookingId = String(formData.get("bookingId") ?? "");
   if (!bookingId) return;
   try {
-    // TODO: alokasi unit belum ada di service (BookingService belum punya method
-    // allocateUnit / assignUnit). No-op untuk saat ini; butuh DB + method service baru.
-    void bookingId;
+    await getBookingService().markOngoing({ bookingId });
   } catch (error) {
-    console.error("allocateUnit gagal", error);
+    console.error("markOngoing gagal", error);
   }
   revalidatePath("/admin");
+}
+
+/** Selesaikan sewa: ONGOING → COMPLETED (mobil sudah dikembalikan). */
+export async function markCompleted(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const bookingId = String(formData.get("bookingId") ?? "");
+  if (!bookingId) return;
+  try {
+    await getBookingService().markCompleted({ bookingId });
+  } catch (error) {
+    console.error("markCompleted gagal", error);
+  }
+  revalidatePath("/admin");
+}
+
+/** Intent yang didukung oleh bookingActionWithState (satu action generik per baris tabel). */
+type BookingActionIntent = "approve" | "cancel" | "allocate" | "ongoing" | "completed";
+
+/** State hasil aksi booking, dipakai oleh useActionState di bookings-table.tsx. */
+export interface BookingActionState {
+  error?: string;
+  ok?: string;
+}
+
+/** Pesan generik untuk error yang tidak perlu (atau tidak boleh) ditampilkan mentah ke admin. */
+const GENERIC_ERROR = "Aksi gagal — coba lagi.";
+
+/**
+ * Aksi booking generik yang MENGEMBALIKAN state (untuk useActionState), sehingga baris
+ * tabel bisa menampilkan feedback sukses/gagal tanpa menelan error ke console saja.
+ * Dipakai oleh bookings-table.tsx; lima action plain di atas tetap dipertahankan apa
+ * adanya untuk dipakai halaman detail booking (agent lain).
+ */
+export async function bookingActionWithState(
+  _prev: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  await requireAdmin();
+  const intent = String(formData.get("intent") ?? "") as BookingActionIntent | "";
+  const bookingId = String(formData.get("bookingId") ?? "");
+  if (!intent || !bookingId) {
+    return { error: GENERIC_ERROR };
+  }
+
+  try {
+    const service = getBookingService();
+    switch (intent) {
+      case "approve":
+        await service.approve({ bookingId });
+        return { ok: "Disetujui." };
+      case "cancel":
+        await service.cancelByOperator({ bookingId });
+        return { ok: "Dibatalkan." };
+      case "allocate": {
+        const unitId = String(formData.get("unitId") ?? "");
+        if (!unitId) return { error: "Pilih unit terlebih dahulu." };
+        await service.allocateUnit({ bookingId, unitId });
+        return { ok: "Unit dialokasikan." };
+      }
+      case "ongoing":
+        await service.markOngoing({ bookingId });
+        return { ok: "Ditandai berjalan." };
+      case "completed":
+        await service.markCompleted({ bookingId });
+        return { ok: "Ditandai selesai." };
+      default:
+        return { error: GENERIC_ERROR };
+    }
+  } catch (error) {
+    const message = error instanceof InvalidTransitionError ? error.message : GENERIC_ERROR;
+    return { error: message };
+  } finally {
+    revalidatePath("/admin");
+  }
 }

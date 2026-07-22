@@ -40,6 +40,14 @@ export default async function HandoverAdminPage({
 
   return (
     <Container style={{ padding: "2.5rem 0 4rem" }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .ho-submit {
+            width: 100%;
+          }
+        }
+      `}</style>
+
       <div className="reveal" style={{ marginBottom: "1.75rem" }}>
         <span className="kicker">Admin · Serah Terima</span>
         <h1 style={{ margin: "0.6rem 0 0.3rem" }}>Berita Acara</h1>

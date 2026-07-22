@@ -6,13 +6,26 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { getReports } from "@/lib/reports";
-import { Container, Card, CardBody } from "@/ui/primitives";
+import { getReports, type ReportFilter } from "@/lib/reports";
+import { listCarModels } from "@/lib/catalog";
+import type { BookingStatus, RentalMode } from "@/domain/booking/booking";
+import { Container, Card, CardBody, Field } from "@/ui/primitives";
 import { Icon } from "@/ui/icons";
-import { formatIDR, formatWIB } from "@/ui/format";
+import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL } from "@/ui/format";
 
 // Always read the freshest DB — never cache the reports page.
 export const dynamic = "force-dynamic";
+
+const MODE_VALUES: RentalMode[] = ["SELF_DRIVE", "CHAUFFEUR"];
+const STATUS_VALUES: BookingStatus[] = [
+  "REQUESTED",
+  "AWAITING_APPROVAL",
+  "CONFIRMED",
+  "EXPIRED",
+  "ONGOING",
+  "COMPLETED",
+  "CANCELLED",
+];
 
 type StatIcon = "key" | "calendar" | "clock" | "shield";
 
@@ -48,11 +61,51 @@ function barPct(value: number, max: number): number {
   return Math.max(0, Math.min(100, (value / max) * 100));
 }
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const s = await auth();
   if (s?.user?.role !== "ADMIN") redirect("/login");
 
-  const report = await getReports();
+  const sp = await searchParams;
+  const pick = (key: string): string => {
+    const v = sp[key];
+    return typeof v === "string" ? v : "";
+  };
+
+  const fromRaw = pick("from");
+  const toRaw = pick("to");
+  const modeRaw = pick("mode");
+  const statusRaw = pick("status");
+  const carModelIdRaw = pick("carModelId");
+
+  const fromDate = fromRaw ? new Date(`${fromRaw}T00:00:00`) : undefined;
+  const toDate = toRaw ? new Date(`${toRaw}T23:59:59.999`) : undefined;
+
+  const filter: ReportFilter = {
+    from: fromDate && !Number.isNaN(fromDate.getTime()) ? fromDate : undefined,
+    to: toDate && !Number.isNaN(toDate.getTime()) ? toDate : undefined,
+    mode: MODE_VALUES.includes(modeRaw as RentalMode) ? (modeRaw as RentalMode) : undefined,
+    status: STATUS_VALUES.includes(statusRaw as BookingStatus)
+      ? (statusRaw as BookingStatus)
+      : undefined,
+    carModelId: carModelIdRaw || undefined,
+  };
+
+  // Querystring dari filter aktif (searchParams asli, bukan objek filter yang sudah
+  // dinormalisasi) supaya tombol Export CSV membawa persis apa yang sedang dilihat admin.
+  const exportParams = new URLSearchParams();
+  if (fromRaw) exportParams.set("from", fromRaw);
+  if (toRaw) exportParams.set("to", toRaw);
+  if (modeRaw) exportParams.set("mode", modeRaw);
+  if (statusRaw) exportParams.set("status", statusRaw);
+  if (carModelIdRaw) exportParams.set("carModelId", carModelIdRaw);
+  const exportQuery = exportParams.toString();
+  const exportHref = `/admin/reports/export${exportQuery ? `?${exportQuery}` : ""}`;
+
+  const [report, cars] = await Promise.all([getReports(new Date(), filter), listCarModels()]);
   const {
     revenueTotal,
     revenueThisMonth,
@@ -114,6 +167,16 @@ export default async function ReportsPage() {
             gap: 0.6rem;
           }
         }
+        .rp-filter-item {
+          flex: 1 1 160px;
+          min-width: 160px;
+        }
+        @media (max-width: 640px) {
+          .rp-filter-item {
+            flex: 1 1 100%;
+            min-width: 0;
+          }
+        }
       `}</style>
 
       {/* ---- Header ---- */}
@@ -134,9 +197,77 @@ export default async function ReportsPage() {
           </div>
           <h1 style={{ margin: 0 }}>Reports</h1>
           <p className="muted" style={{ margin: "0.6rem 0 0" }}>
-            Generated {formatWIB(generatedAt)}
+            Revenue, mode split, fleet utilization, and outstanding payments — generated{" "}
+            {formatWIB(generatedAt)}.
           </p>
         </div>
+      </div>
+
+      {/* ---- Filter bar ---- */}
+      <div className="reveal" style={{ marginBottom: "2.5rem" }}>
+        <Card>
+          <CardBody>
+            <form method="GET" className="admin-filter-bar">
+              <div className="rp-filter-item">
+                <Field label="Periode mulai" htmlFor="from">
+                  <input id="from" name="from" type="date" defaultValue={fromRaw} />
+                </Field>
+              </div>
+              <div className="rp-filter-item">
+                <Field label="Periode akhir" htmlFor="to">
+                  <input id="to" name="to" type="date" defaultValue={toRaw} />
+                </Field>
+              </div>
+              <div className="rp-filter-item">
+                <Field label="Mode" htmlFor="mode">
+                  <select id="mode" name="mode" defaultValue={modeRaw}>
+                    <option value="">All</option>
+                    {MODE_VALUES.map((m) => (
+                      <option key={m} value={m}>
+                        {MODE_LABEL[m]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div className="rp-filter-item">
+                <Field label="Status" htmlFor="status">
+                  <select id="status" name="status" defaultValue={statusRaw}>
+                    <option value="">All</option>
+                    {STATUS_VALUES.map((st) => (
+                      <option key={st} value={st}>
+                        {STATUS_LABEL[st]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div className="rp-filter-item">
+                <Field label="Car" htmlFor="carModelId">
+                  <select id="carModelId" name="carModelId" defaultValue={carModelIdRaw}>
+                    <option value="">All</option>
+                    {cars.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.brand} {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div className="admin-actions-row">
+                <button type="submit" className="btn btn-primary">
+                  Apply
+                </button>
+                <Link href="/admin/reports" className="btn btn-ghost">
+                  Reset
+                </Link>
+                <Link href={exportHref} className="btn btn-ghost">
+                  Export CSV
+                </Link>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       </div>
 
       {/* ---- KPI row ---- */}
@@ -170,7 +301,7 @@ export default async function ReportsPage() {
               <h2 style={{ margin: 0 }}>Revenue &amp; bookings per car</h2>
               <span className="eyebrow">{perCar.length} models</span>
             </div>
-            <div style={{ overflowX: "auto" }}>
+            <div className="admin-table-wrap">
               <table className="table">
                 <thead>
                   <tr>
@@ -277,7 +408,7 @@ export default async function ReportsPage() {
             <p className="muted" style={{ marginTop: 0, marginBottom: "1rem" }}>
               Total active rental-days across the fleet, and how they split per model.
             </p>
-            <div style={{ overflowX: "auto" }}>
+            <div className="admin-table-wrap">
               <table className="table">
                 <thead>
                   <tr>
@@ -334,7 +465,7 @@ export default async function ReportsPage() {
               <h2 style={{ margin: 0 }}>Outstanding payments</h2>
               <span className="eyebrow">{outstanding.length} awaiting settlement</span>
             </div>
-            <div style={{ overflowX: "auto" }}>
+            <div className="admin-table-wrap">
               <table className="table">
                 <thead>
                   <tr>

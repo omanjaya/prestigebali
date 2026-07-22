@@ -40,7 +40,7 @@ export default async function AdminCarsPage() {
       >
         <div>
           <div className="kicker" style={{ marginBottom: "0.75rem" }}>
-            Admin · Fleet
+            Fleet · Cars
           </div>
           <h1 style={{ margin: 0 }}>Manage Cars</h1>
           <p className="muted" style={{ margin: "0.6rem 0 0", maxWidth: 560 }}>
@@ -64,7 +64,7 @@ export default async function AdminCarsPage() {
             <h2 style={{ margin: 0 }}>Catalog</h2>
             <span className="eyebrow">{cars.length} vehicles</span>
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <div className="admin-table-wrap">
             <table className="table">
               <thead>
                 <tr>
@@ -82,7 +82,15 @@ export default async function AdminCarsPage() {
                 {cars.length === 0 ? (
                   <tr>
                     <td colSpan={8}>
-                      <span className="muted">No cars yet. Add your first vehicle.</span>
+                      <div
+                        className="row"
+                        style={{ justifyContent: "space-between", gap: "1rem" }}
+                      >
+                        <span className="muted">No cars yet. Add your first vehicle.</span>
+                        <ButtonLink href="/admin/cars/new" variant="primary">
+                          New car
+                        </ButtonLink>
+                      </div>
                     </td>
                   </tr>
                 ) : (

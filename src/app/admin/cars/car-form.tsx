@@ -9,6 +9,7 @@ import { useActionState } from "react";
 import { Field } from "@/ui/primitives";
 import { CATEGORY_LABEL, type CarModelView } from "@/lib/catalog";
 import { saveCar, deleteCar, type CarFormState } from "./actions";
+import { ConfirmButton } from "../confirm-button";
 
 const initialState: CarFormState = {};
 
@@ -32,127 +33,147 @@ export function CarForm({ car }: { car?: CarModelView }) {
 
   return (
     <>
-      <form action={formAction} className="stack" style={{ gap: "1.25rem" }}>
+      <form action={formAction} className="stack" style={{ gap: "1.5rem" }}>
         {car ? <input type="hidden" name="id" value={car.id} /> : null}
 
-        <div className="eyebrow">Identity</div>
+        <div className="admin-form-grid">
+          <div className="eyebrow" style={{ gridColumn: "1 / -1" }}>
+            Identity
+          </div>
 
-        <Field label="Name" htmlFor="name">
-          <input id="name" name="name" type="text" defaultValue={car?.name ?? ""} required />
-        </Field>
+          <Field label="Name" htmlFor="name">
+            <input id="name" name="name" type="text" defaultValue={car?.name ?? ""} required />
+          </Field>
 
-        <Field label="Brand" htmlFor="brand">
-          <input id="brand" name="brand" type="text" defaultValue={car?.brand ?? ""} required />
-        </Field>
+          <Field label="Brand" htmlFor="brand">
+            <input id="brand" name="brand" type="text" defaultValue={car?.brand ?? ""} required />
+          </Field>
 
-        <div className="row" style={{ gap: "1rem", alignItems: "flex-start" }}>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <Field label="Year" htmlFor="year">
+          <Field label="Year" htmlFor="year">
+            <input
+              id="year"
+              name="year"
+              type="number"
+              min={1900}
+              max={2100}
+              defaultValue={car?.year ?? ""}
+              required
+            />
+          </Field>
+
+          <Field label="Seats" htmlFor="seats">
+            <input
+              id="seats"
+              name="seats"
+              type="number"
+              min={1}
+              defaultValue={car?.seats ?? ""}
+              required
+            />
+          </Field>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <Field label="Transmission" htmlFor="transmission">
               <input
-                id="year"
-                name="year"
-                type="number"
-                min={1900}
-                max={2100}
-                defaultValue={car?.year ?? ""}
+                id="transmission"
+                name="transmission"
+                type="text"
+                placeholder="Automatic / Manual"
+                defaultValue={car?.transmission ?? ""}
                 required
               />
             </Field>
           </div>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <Field label="Seats" htmlFor="seats">
-              <input
-                id="seats"
-                name="seats"
-                type="number"
-                min={1}
-                defaultValue={car?.seats ?? ""}
-                required
-              />
-            </Field>
+
+          <div className="divider" style={{ gridColumn: "1 / -1", margin: "0.25rem 0" }} />
+          <div className="eyebrow" style={{ gridColumn: "1 / -1" }}>
+            Classification
           </div>
-        </div>
 
-        <Field label="Transmission" htmlFor="transmission">
-          <input
-            id="transmission"
-            name="transmission"
-            type="text"
-            placeholder="Automatic / Manual"
-            defaultValue={car?.transmission ?? ""}
-            required
-          />
-        </Field>
-
-        <div className="divider" style={{ margin: "0.5rem 0" }} />
-        <div className="eyebrow">Classification</div>
-
-        <Field label="Category" htmlFor="category">
-          <select id="category" name="category" defaultValue={car?.category ?? ""} required>
-            <option value="" disabled>
-              Select a category…
-            </option>
-            {CATEGORY_ORDER.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABEL[c]}
+          <Field label="Category" htmlFor="category">
+            <select id="category" name="category" defaultValue={car?.category ?? ""} required>
+              <option value="" disabled>
+                Select a category…
               </option>
-            ))}
-          </select>
-        </Field>
+              {CATEGORY_ORDER.map((c) => (
+                <option key={c} value={c}>
+                  {CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </select>
+          </Field>
 
-        <Field label="Stock" htmlFor="stock">
-          <input
-            id="stock"
-            name="stock"
-            type="number"
-            min={0}
-            defaultValue={car?.stock ?? 1}
-            required
-          />
-        </Field>
+          <Field label="Stock" htmlFor="stock">
+            <input
+              id="stock"
+              name="stock"
+              type="number"
+              min={0}
+              defaultValue={car?.stock ?? 1}
+              required
+            />
+          </Field>
 
-        <div className="divider" style={{ margin: "0.5rem 0" }} />
-        <div className="eyebrow">Pricing</div>
+          <div className="divider" style={{ gridColumn: "1 / -1", margin: "0.25rem 0" }} />
+          <div className="eyebrow" style={{ gridColumn: "1 / -1" }}>
+            Pricing
+          </div>
 
-        <div className="row" style={{ gap: "1rem", alignItems: "flex-start" }}>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <Field label="Daily Rate (IDR, Self-Drive)" htmlFor="dailyRate">
+          <Field label="Daily Rate (IDR, Self-Drive)" htmlFor="dailyRate">
+            <input
+              id="dailyRate"
+              name="dailyRate"
+              type="number"
+              min={0}
+              placeholder="Leave blank if N/A"
+              defaultValue={car?.dailyRate ?? ""}
+            />
+          </Field>
+
+          <Field label="Chauffeur Package (IDR, 12h)" htmlFor="chauffeurPackage">
+            <input
+              id="chauffeurPackage"
+              name="chauffeurPackage"
+              type="number"
+              min={0}
+              placeholder="Leave blank if N/A"
+              defaultValue={car?.chauffeurPackage ?? ""}
+            />
+          </Field>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <Field label="Security deposit (Self-Drive)" htmlFor="securityDeposit">
               <input
-                id="dailyRate"
-                name="dailyRate"
+                id="securityDeposit"
+                name="securityDeposit"
                 type="number"
                 min={0}
                 placeholder="Leave blank if N/A"
-                defaultValue={car?.dailyRate ?? ""}
+                defaultValue={car?.securityDeposit ?? ""}
               />
+              <p className="muted" style={{ margin: "0.35rem 0 0", fontSize: "0.85rem" }}>
+                Rp; dikembalikan setelah unit kembali.
+              </p>
             </Field>
           </div>
-          <div style={{ flex: 1, minWidth: 160 }}>
-            <Field label="Chauffeur Package (IDR, 12h)" htmlFor="chauffeurPackage">
-              <input
-                id="chauffeurPackage"
-                name="chauffeurPackage"
-                type="number"
-                min={0}
-                placeholder="Leave blank if N/A"
-                defaultValue={car?.chauffeurPackage ?? ""}
+
+          <div className="divider" style={{ gridColumn: "1 / -1", margin: "0.25rem 0" }} />
+          <div className="eyebrow" style={{ gridColumn: "1 / -1" }}>
+            Media
+          </div>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <Field label="Photo URLs (one per line)" htmlFor="photos">
+              <textarea
+                id="photos"
+                name="photos"
+                rows={4}
+                placeholder="https://images.unsplash.com/…"
+                defaultValue={car?.photos.join("\n") ?? ""}
               />
             </Field>
           </div>
         </div>
-
-        <div className="divider" style={{ margin: "0.5rem 0" }} />
-        <div className="eyebrow">Media</div>
-
-        <Field label="Photo URLs (one per line)" htmlFor="photos">
-          <textarea
-            id="photos"
-            name="photos"
-            rows={4}
-            placeholder="https://images.unsplash.com/…"
-            defaultValue={car?.photos.join("\n") ?? ""}
-          />
-        </Field>
 
         {state.error ? (
           <p className="muted" style={{ color: "var(--danger)" }} role="alert">
@@ -162,7 +183,7 @@ export function CarForm({ car }: { car?: CarModelView }) {
 
         <div className="divider" style={{ margin: "0.5rem 0" }} />
 
-        <div className="row" style={{ gap: "0.75rem" }}>
+        <div className="admin-actions-row">
           <button type="submit" className="btn btn-primary" disabled={pending}>
             {pending ? "Saving…" : isEdit ? "Save changes" : "Create car"}
           </button>
@@ -181,9 +202,11 @@ export function CarForm({ car }: { car?: CarModelView }) {
               {deleteState.error}
             </p>
           ) : null}
-          <button type="submit" className="btn btn-ghost" disabled={deleting}>
-            {deleting ? "Deleting…" : "Delete car"}
-          </button>
+          <div className="admin-actions-row">
+            <ConfirmButton className="btn btn-ghost" disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete car"}
+            </ConfirmButton>
+          </div>
         </form>
       ) : null}
     </>

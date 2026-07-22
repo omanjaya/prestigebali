@@ -1,14 +1,28 @@
 // Dashboard admin (Overview). Auth guard + sub-nav ada di admin/layout.tsx.
-// Fokus: KPI premium, panel "Needs attention", tabel booking dengan filter tab.
+// Fokus: KPI premium, panel "Needs attention", tabel booking dengan cari + filter + pagination.
 
 import Link from "next/link";
-import { listBookings, type BookingView } from "@/lib/bookings";
+import { listBookings, searchBookings, type BookingView } from "@/lib/bookings";
+import { listAllUnits, type UnitView } from "@/lib/units";
+import type { BookingStatus } from "@/domain/booking/booking";
 import { Container } from "@/ui/primitives";
 import { Icon } from "@/ui/icons";
 import { formatIDR } from "@/ui/format";
 import { BookingsTable } from "./bookings-table";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 25;
+
+const STATUS_VALUES: BookingStatus[] = [
+  "REQUESTED",
+  "AWAITING_APPROVAL",
+  "CONFIRMED",
+  "ONGOING",
+  "COMPLETED",
+  "CANCELLED",
+  "EXPIRED",
+];
 
 type KpiIcon = "key" | "calendar" | "shield" | "clock";
 
@@ -41,19 +55,67 @@ function Kpi({
   );
 }
 
-export default async function AdminPage() {
-  const bookings = await listBookings();
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const pick = (key: string): string => {
+    const v = sp[key];
+    return typeof v === "string" ? v : "";
+  };
 
-  const revenue = bookings
+  const q = pick("q");
+  const statusRaw = pick("status");
+  const status = STATUS_VALUES.includes(statusRaw as BookingStatus)
+    ? (statusRaw as BookingStatus)
+    : undefined;
+  const pageRaw = Number(pick("page"));
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
+
+  // KPI (Revenue/Active/Awaiting/Outstanding) DAN badge angka tab status memakai
+  // listBookings() (100 booking terbaru, TIDAK terpengaruh ?q/?status/?page) — supaya
+  // kartu ringkasan tetap menunjukkan gambaran keseluruhan meski admin sedang mencari
+  // atau memfilter tabel di bawahnya. Tabel bookingnya sendiri (rows) datang dari
+  // searchBookings() terpisah, yang baru menerapkan q/status/pagination.
+  const [kpiBookings, allUnits, search] = await Promise.all([
+    listBookings(),
+    listAllUnits(),
+    searchBookings({ q: q || undefined, status, page, pageSize: PAGE_SIZE }),
+  ]);
+
+  const unitsByModel = allUnits.reduce<Record<string, UnitView[]>>((map, u) => {
+    (map[u.carModelId] ??= []).push(u);
+    return map;
+  }, {});
+
+  const revenue = kpiBookings
     .filter(isRevenueBearing)
     .reduce((s, b) => s + (b.dpAmount ?? 0) + (b.settlementAmount ?? 0), 0);
-  const active = bookings.filter((b) =>
+  const active = kpiBookings.filter((b) =>
     ["REQUESTED", "AWAITING_APPROVAL", "CONFIRMED", "ONGOING"].includes(b.status),
   ).length;
-  const awaiting = bookings.filter((b) => b.status === "AWAITING_APPROVAL").length;
-  const outstanding = bookings.filter(
+  const awaiting = kpiBookings.filter((b) => b.status === "AWAITING_APPROVAL").length;
+  const outstanding = kpiBookings.filter(
     (b) => b.status === "CONFIRMED" && b.dpAmount != null && b.settlementAmount == null,
   );
+
+  const tabCounts: Partial<Record<BookingStatus, number>> = {};
+  for (const st of STATUS_VALUES) {
+    tabCounts[st] = kpiBookings.filter((b) => b.status === st).length;
+  }
+
+  const { rows, total, pageSize } = search;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  function pageHref(p: number): string {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (status) params.set("status", status);
+    params.set("page", String(p));
+    return `/admin?${params.toString()}#bookings`;
+  }
 
   return (
     <Container style={{ padding: "2.5rem 0 4rem" }}>
@@ -107,9 +169,58 @@ export default async function AdminPage() {
           style={{ justifyContent: "space-between", alignItems: "baseline", marginBottom: "1rem" }}
         >
           <h2 style={{ margin: 0 }}>Bookings</h2>
-          <span className="eyebrow">{bookings.length} total</span>
+          <span className="eyebrow">{total} total</span>
         </div>
-        <BookingsTable bookings={bookings} />
+
+        <form method="GET" className="admin-filter-bar" style={{ marginBottom: "1rem" }}>
+          <input type="hidden" name="status" value={status ?? ""} />
+          <label style={{ flex: "1 1 220px" }}>
+            Cari
+            <input type="text" name="q" defaultValue={q} placeholder="Cari kode / nama / HP…" />
+          </label>
+          <button type="submit" className="btn btn-sm btn-primary">
+            Search
+          </button>
+          <Link href="/admin#bookings" className="btn btn-sm btn-ghost">
+            Reset
+          </Link>
+        </form>
+
+        <BookingsTable
+          bookings={rows}
+          units={unitsByModel}
+          q={q || undefined}
+          status={status}
+          counts={tabCounts}
+          allCount={kpiBookings.length}
+        />
+
+        <div
+          className="row"
+          style={{ justifyContent: "space-between", alignItems: "center", marginTop: "1.25rem" }}
+        >
+          {page > 1 ? (
+            <Link href={pageHref(page - 1)} className="btn btn-sm btn-ghost">
+              Prev
+            </Link>
+          ) : (
+            <span className="btn btn-sm btn-ghost" aria-disabled="true" style={{ opacity: 0.4 }}>
+              Prev
+            </span>
+          )}
+          <span className="muted" style={{ fontSize: "0.85rem" }}>
+            Page {page} of {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Link href={pageHref(page + 1)} className="btn btn-sm btn-ghost">
+              Next
+            </Link>
+          ) : (
+            <span className="btn btn-sm btn-ghost" aria-disabled="true" style={{ opacity: 0.4 }}>
+              Next
+            </span>
+          )}
+        </div>
       </div>
     </Container>
   );
