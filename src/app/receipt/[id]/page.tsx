@@ -35,6 +35,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const hasSettlement = b.settlementAmount != null;
   const settlement = b.settlementAmount ?? 0;
   const totalPaid = dp + settlement;
+  const hasDiscount = b.discountAmount != null && b.discountAmount > 0;
+  const hasDeposit = b.depositAmount != null && b.depositAmount > 0;
 
   return (
     <div className={styles.page}>
@@ -95,6 +97,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
                   <dt>Allocated unit</dt>
                   <dd>{b.allocatedUnit ?? "—"}</dd>
                 </div>
+                {b.promoCode ? (
+                  <div className={styles.detailRow}>
+                    <dt>Promo code</dt>
+                    <dd>{b.promoCode}</dd>
+                  </div>
+                ) : null}
               </dl>
             </section>
           </div>
@@ -111,9 +119,15 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             </thead>
             <tbody>
               <tr>
-                <td className={styles.itemLabel}>Deposit (DP)</td>
+                <td className={styles.itemLabel}>Down payment (DP)</td>
                 <td className={styles.num}>{formatIDR(dp)}</td>
               </tr>
+              {hasDiscount ? (
+                <tr>
+                  <td className={styles.itemLabel}>Discount ({b.promoCode ?? "promo"})</td>
+                  <td className={styles.num}>&minus;{formatIDR(b.discountAmount!)}</td>
+                </tr>
+              ) : null}
               {hasSettlement ? (
                 <tr>
                   <td className={styles.itemLabel}>Settlement</td>
@@ -127,9 +141,96 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             </tbody>
           </table>
 
+          {hasDiscount ? (
+            <p className={styles.balanceNote}>
+              Discount already reflected in the down payment / settlement amounts above — shown
+              here for reference only.
+            </p>
+          ) : null}
+
           {!hasSettlement ? (
             <p className={styles.balanceNote}>Balance to be settled before handover.</p>
           ) : null}
+
+          {hasDeposit ? (
+            <div className={styles.depositHeld}>
+              <span className={styles.depositHeldLabel}>Security deposit held (refundable)</span>
+              <span className={styles.depositHeldAmount}>{formatIDR(b.depositAmount!)}</span>
+              <p className={styles.depositHeldNote}>
+                Not part of the rental total above — this deposit is refundable and is returned
+                after the vehicle is returned in good condition, per the Rental Agreement below.
+              </p>
+            </div>
+          ) : null}
+
+          {/* Rental Agreement (fitur #6) — ringkasan syarat bilingual EN/ID, ikut tercetak */}
+          <hr className={styles.rule} />
+          <section className={styles.agreement}>
+            <h2 className={styles.blockTitle}>Rental Agreement &middot; Perjanjian Sewa</h2>
+            <ol className={styles.agreementList}>
+              <li>
+                <span className={styles.agreementEn}>
+                  The renter must present a valid driving license (SIM) and ID card (KTP) for
+                  Self-Drive rentals.
+                </span>
+                <span className={styles.agreementId}>
+                  Penyewa wajib menunjukkan SIM dan KTP yang berlaku untuk sewa Lepas Kunci.
+                </span>
+              </li>
+              <li>
+                <span className={styles.agreementEn}>
+                  The security deposit is refunded in full after the vehicle is returned in the
+                  agreed condition, minus any applicable penalties (late return, mileage overage,
+                  or damage).
+                </span>
+                <span className={styles.agreementId}>
+                  Deposit jaminan dikembalikan penuh setelah unit kembali sesuai kondisi yang
+                  disepakati, dikurangi denda bila ada (keterlambatan, kelebihan batas KM, atau
+                  kerusakan).
+                </span>
+              </li>
+              <li>
+                <span className={styles.agreementEn}>
+                  Cancellations follow the refund policy: 7+ days before start, full refund minus
+                  an admin fee; 3&ndash;6 days before, 50% refund; 2 days or fewer before, no
+                  refund.
+                </span>
+                <span className={styles.agreementId}>
+                  Pembatalan mengikuti kebijakan refund: &ge;H-7 penuh dikurangi biaya admin, H-3
+                  s.d. H-6 50%, &le;H-2 hangus.
+                </span>
+              </li>
+              <li>
+                <span className={styles.agreementEn}>
+                  The vehicle must not be used for racing or any unlawful activity.
+                </span>
+                <span className={styles.agreementId}>
+                  Mobil dilarang digunakan untuk balapan atau kegiatan yang melanggar hukum.
+                </span>
+              </li>
+              <li>
+                <span className={styles.agreementEn}>
+                  The fuel level must be returned at the same level as at handover.
+                </span>
+                <span className={styles.agreementId}>
+                  Bahan bakar wajib dikembalikan pada level yang sama seperti saat serah-terima.
+                </span>
+              </li>
+            </ol>
+
+            <div className={styles.signatures}>
+              <div className={styles.sigBlock}>
+                <div className={styles.sigLine} />
+                <span className={styles.sigLabel}>Renter &middot; Penyewa</span>
+                <span className={styles.sigName}>{b.customerName}</span>
+              </div>
+              <div className={styles.sigBlock}>
+                <div className={styles.sigLine} />
+                <span className={styles.sigLabel}>Prestige Bali</span>
+                <span className={styles.sigName}>Authorized representative</span>
+              </div>
+            </div>
+          </section>
 
           {/* Footer */}
           <footer className={styles.foot}>

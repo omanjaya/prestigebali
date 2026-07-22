@@ -18,7 +18,7 @@
   transform: translateX(-50%);
   width: min(1000px, 92%);
   height: 340px;
-  background: radial-gradient(58% 100% at 50% 0%, rgba(198, 160, 82, 0.05), transparent 72%);
+  background: radial-gradient(58% 100% at 50% 0%, rgba(168, 132, 44, 0.07), transparent 72%);
   pointer-events: none;
   z-index: 0;
 }
@@ -40,19 +40,20 @@
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--surface-2);
+  box-shadow: var(--shadow-md);
 }
 .hero img {
   object-fit: cover;
   filter: saturate(0.92) contrast(1.02);
 }
-/* Warm scrim so ivory copy never fights the greens; keeps it noir. */
+/* Scrim SENGAJA selalu gelap (independen tema) agar caption ivory tetap terbaca. */
 .heroScrim {
   position: absolute;
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(to top, rgba(16, 13, 10, 0.55), transparent 45%),
-    linear-gradient(to right, rgba(16, 13, 10, 0.35), transparent 55%);
+    linear-gradient(to top, rgba(23, 19, 16, 0.6), transparent 45%),
+    linear-gradient(to right, rgba(23, 19, 16, 0.4), transparent 55%);
 }
 .heroCaption {
   position: absolute;
@@ -66,10 +67,10 @@
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--text);
+  color: var(--on-photo-text);
 }
 .heroCaption svg {
-  color: var(--accent);
+  color: var(--on-photo-accent);
 }
 
 /* ---- Copy (right) ---- */
@@ -108,6 +109,7 @@
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--surface-2);
+  box-shadow: var(--shadow-sm);
 }
 .tile img {
   object-fit: cover;

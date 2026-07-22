@@ -1,19 +1,24 @@
-// Rich multi-column footer (server component) — Warm Noir.
+// Rich multi-column footer (async server component) — Ivory & Gold, i18n.
 // Brand + explore + contact + assurance columns, with a bottom © / Admin bar.
 
+import { getT } from "@/i18n/server";
+import { siteMessages } from "@/i18n/messages/site";
 import { SITE, waLink } from "@/lib/site-config";
 import { Icon } from "@/ui/icons";
 import styles from "./site-footer.module.css";
 
 const YEAR = new Date().getFullYear();
 
-const EXPLORE = [
-  { label: "Collection", href: "/#collection" },
-  { label: "Experience", href: "/#experience" },
-  { label: "Ways to Ride", href: "/#modes" },
-] as const;
+export async function SiteFooter() {
+  const { t } = await getT(siteMessages);
 
-export function SiteFooter() {
+  const EXPLORE = [
+    { label: t("common.nav.fleet"), href: "/#collection" },
+    { label: t("site.nav.experience"), href: "/#experience" },
+    { label: t("common.nav.about"), href: "/about" },
+    { label: t("common.nav.blog"), href: "/blog" },
+  ] as const;
+
   return (
     <footer className={styles.footer}>
       <div className="container">
@@ -21,10 +26,7 @@ export function SiteFooter() {
           {/* Brand */}
           <div className={`${styles.col} ${styles.brandCol}`}>
             <p className={styles.brand}>Prestige Bali</p>
-            <p className={styles.blurb}>
-              A curated fleet of exceptional cars, delivered with concierge care
-              across the island. Discreet, insured, and ready when you are.
-            </p>
+            <p className={styles.blurb}>{t("common.footer.tagline")}</p>
             <div className={styles.social}>
               <a
                 className={styles.socialLink}
@@ -63,7 +65,7 @@ export function SiteFooter() {
 
           {/* Explore */}
           <nav className={styles.col} aria-label="Explore">
-            <p className={styles.heading}>Explore</p>
+            <p className={styles.heading}>{t("common.nav.fleet")}</p>
             <ul className={styles.links}>
               {EXPLORE.map((item) => (
                 <li key={item.href}>
@@ -78,7 +80,7 @@ export function SiteFooter() {
 
           {/* Contact */}
           <div className={styles.col}>
-            <p className={styles.heading}>Contact</p>
+            <p className={styles.heading}>{t("common.nav.contact")}</p>
             <a
               className={styles.contactRow}
               href={waLink("Hi Prestige Bali, I'd like to enquire about a car.")}
@@ -86,7 +88,7 @@ export function SiteFooter() {
               rel="noopener noreferrer"
             >
               <span className={styles.contactLabel}>WhatsApp</span>
-              <span className={styles.contactValue}>Chat with us</span>
+              <span className={styles.contactValue}>{t("common.cta.chatWhatsApp")}</span>
             </a>
             <a className={styles.contactRow} href={`tel:${SITE.phone.replace(/\s/g, "")}`}>
               <span className={styles.contactLabel}>Phone</span>
@@ -116,7 +118,9 @@ export function SiteFooter() {
       <div className={styles.bottom}>
         <div className="container">
           <div className={styles.bottomInner}>
-            <span className={styles.copy}>© {YEAR} Prestige Bali</span>
+            <span className={styles.copy}>
+              © {YEAR} Prestige Bali — {t("common.footer.rights")}
+            </span>
             <a className={styles.adminLink} href="/admin">
               Admin
             </a>

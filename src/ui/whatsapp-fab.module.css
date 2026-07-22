@@ -1,4 +1,4 @@
-/* Floating WhatsApp button — Warm Noir. Sits below the custom cursor (z 9999). */
+/* Floating WhatsApp button — Ivory & Gold. Sits below the custom cursor (z 9999). */
 
 .fab {
   position: fixed;
@@ -18,8 +18,8 @@
   color: var(--text);
 
   box-shadow:
-    0 10px 30px -12px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(0, 0, 0, 0.2);
+    0 10px 30px -12px rgba(23, 19, 16, 0.28),
+    0 0 0 1px rgba(23, 19, 16, 0.04);
   cursor: pointer;
   overflow: hidden;
 
@@ -34,7 +34,7 @@
 .fab:hover {
   border-color: var(--accent);
   box-shadow:
-    0 14px 36px -12px rgba(0, 0, 0, 0.75),
+    0 16px 40px -12px rgba(23, 19, 16, 0.32),
     0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
   transform: translateY(-2px);
 }

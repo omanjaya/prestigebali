@@ -1,27 +1,32 @@
-// Halaman Detail Mobil — Editorial Noir. Server Component (async).
-// Data via getCarModel (DB); foto nyata (Unsplash interim) via CardMedia.
+// Halaman Detail Mobil — Ivory & Gold, i18n. Server Component (async).
+// Data via getCarModel (DB); galeri foto (1..n) dirender oleh <Gallery> (client).
 
 import { notFound } from "next/navigation";
 
 import { getCarModel, CATEGORY_LABEL } from "@/lib/catalog";
-import { formatIDR, MODE_LABEL } from "@/ui/format";
-import { Container, Card, CardMedia, ButtonLink } from "@/ui/primitives";
+import { getT } from "@/i18n/server";
+import { siteMessages } from "@/i18n/messages/site";
+import { Money } from "@/i18n/client";
+import { Container, Card, ButtonLink } from "@/ui/primitives";
 import { Icon } from "@/ui/icons";
+
+import { Gallery } from "./gallery";
 
 type SpecIcon = "steering" | "user" | "calendar" | "check";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const car = await getCarModel(id);
+  const [car, { t }] = await Promise.all([getCarModel(id), getT(siteMessages)]);
   if (!car) notFound();
 
+  const unitLabel = car.stock === 1 ? t("site.detail.unit") : t("site.detail.units");
   const specs: { label: string; value: string; icon: SpecIcon }[] = [
-    { label: "Transmission", value: car.transmission, icon: "steering" },
-    { label: "Capacity", value: `${car.seats} seats`, icon: "user" },
-    { label: "Year", value: String(car.year), icon: "calendar" },
+    { label: t("common.transmission"), value: car.transmission, icon: "steering" },
+    { label: t("common.capacity"), value: `${car.seats} ${t("common.seats")}`, icon: "user" },
+    { label: t("common.year"), value: String(car.year), icon: "calendar" },
     {
-      label: "Availability",
-      value: car.stock > 0 ? `${car.stock} unit${car.stock === 1 ? "" : "s"}` : "Out of stock",
+      label: t("common.availability"),
+      value: car.stock > 0 ? `${car.stock} ${unitLabel}` : t("site.detail.outOfStock"),
       icon: "check",
     },
   ];
@@ -29,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   return (
     <Container style={{ padding: "2.5rem 0 4rem" }}>
       <ButtonLink href="/" variant="ghost">
-        <Icon name="chevron" size={15} style={{ transform: "rotate(180deg)" }} /> Back to collection
+        <Icon name="chevron" size={15} style={{ transform: "rotate(180deg)" }} /> {t("site.detail.back")}
       </ButtonLink>
 
       <div
@@ -44,20 +49,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       >
         {/* Media — editorial hero frame */}
         <Card style={{ position: "sticky", top: "96px" }}>
-          <div style={{ aspectRatio: "4 / 3", position: "relative" }}>
-            <CardMedia
-              label={`${car.brand} ${car.name}`}
-              src={car.photos[0]}
-              priority
-              sizes="(max-width: 800px) 100vw, 58vw"
-            />
-            <span
-              className="car-cat"
-              style={{ top: "1.1rem", left: "1.1rem" }}
-            >
-              {CATEGORY_LABEL[car.category]}
-            </span>
-          </div>
+          <Gallery
+            photos={car.photos}
+            alt={`${car.brand} ${car.name}`}
+            categoryLabel={CATEGORY_LABEL[car.category]}
+          />
         </Card>
 
         {/* Informasi */}
@@ -73,7 +69,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <hr className="divider" style={{ margin: 0 }} />
 
           <div className="reveal">
-            <span className="eyebrow">Specifications</span>
+            <span className="eyebrow">{t("site.detail.specifications")}</span>
             <div
               style={{
                 display: "grid",
@@ -111,7 +107,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div className="reveal">
-            <span className="eyebrow">Rates</span>
+            <span className="eyebrow">{t("site.detail.rates")}</span>
             <div className="stack" style={{ gap: "0.75rem", marginTop: "1.1rem" }}>
               {car.dailyRate != null ? (
                 <div
@@ -124,11 +120,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 >
                   <span className="row" style={{ gap: "0.6rem" }}>
                     <Icon name="key" size={18} style={{ color: "var(--accent)" }} />
-                    {MODE_LABEL.SELF_DRIVE}
+                    {t("common.mode.selfDrive")}
                   </span>
                   <span>
-                    <span className="price">{formatIDR(car.dailyRate)}</span>{" "}
-                    <span className="price-unit">/ day</span>
+                    <span className="price">
+                      <Money idr={car.dailyRate} />
+                    </span>{" "}
+                    <span className="price-unit">{t("common.perDay")}</span>
                   </span>
                 </div>
               ) : null}
@@ -143,23 +141,25 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 >
                   <span className="row" style={{ gap: "0.6rem" }}>
                     <Icon name="steering" size={18} style={{ color: "var(--accent)" }} />
-                    {MODE_LABEL.CHAUFFEUR}
+                    {t("common.mode.chauffeur")}
                   </span>
                   <span>
-                    <span className="price">{formatIDR(car.chauffeurPackage)}</span>{" "}
-                    <span className="price-unit">/ 12h</span>
+                    <span className="price">
+                      <Money idr={car.chauffeurPackage} />
+                    </span>{" "}
+                    <span className="price-unit">{t("common.per12h")}</span>
                   </span>
                 </div>
               ) : null}
               {car.dailyRate == null && car.chauffeurPackage == null ? (
-                <span className="muted">Contact us for pricing.</span>
+                <span className="muted">{t("site.detail.contactPricing")}</span>
               ) : null}
             </div>
           </div>
 
           <div className="reveal row" style={{ marginTop: "0.25rem" }}>
             <ButtonLink href={`/booking/${car.id}`} variant="primary">
-              Book now <Icon name="arrow" size={16} />
+              {t("common.nav.bookNow")} <Icon name="arrow" size={16} />
             </ButtonLink>
           </div>
 
@@ -174,7 +174,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             }}
           >
             <Icon name="shield" size={16} style={{ marginTop: "2px", flexShrink: 0 }} />
-            The specific colour and unit are assigned by our team; customers don&apos;t choose the colour.
+            {t("site.detail.disclaimer")}
           </p>
         </div>
       </div>

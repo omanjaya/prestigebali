@@ -1,5 +1,5 @@
 // Primitives presentasi bersama (server-component friendly, tanpa hooks).
-// Editorial Noir. Kelas di globals.css. API dijaga stabil (halaman lain tak berubah).
+// Ivory & Gold. Kelas di globals.css. API dijaga stabil (halaman lain tak berubah).
 
 import Link from "next/link";
 import Image from "next/image";
@@ -49,10 +49,23 @@ export function CardMedia({
   }
   return (
     <div className="card-media">
-      <Image src={src} alt={label} fill sizes={sizes} priority={priority} />
+      <Image
+        src={src}
+        alt={label}
+        fill
+        sizes={sizes}
+        priority={priority}
+        placeholder="blur"
+        blurDataURL={MEDIA_BLUR}
+      />
     </div>
   );
 }
+
+/** Placeholder blur netral (gradasi hangat) — varian besar butuh waktu di optimizer
+ *  saat kunjungan pertama; tanpa ini area foto tampak kotak kosong berdetik-detik. */
+const MEDIA_BLUR =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e4dccb'/%3E%3Cstop offset='0.5' stop-color='%23cfc4ac'/%3E%3Cstop offset='1' stop-color='%23b3a586'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='8' height='5' fill='url(%23g)'/%3E%3C/svg%3E";
 
 export function Badge({
   children,

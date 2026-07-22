@@ -1,26 +1,32 @@
 "use client";
 
 // Header scroll-aware + menu mobile. Tanpa "Admin" di topbar (per permintaan).
-// Nav berupa anchor ke section landing + CTA.
+// Nav berupa anchor ke section landing + link About/Blog + CTA + switcher i18n.
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-
-const LINKS = [
-  { href: "/#collection", label: "Collection" },
-  { href: "/#experience", label: "Experience" },
-  { href: "/#modes", label: "Ways to Ride" },
-];
+import { useCurrency, useI18n } from "@/i18n/client";
+import { LocaleSwitcher, CurrencySwitcher } from "@/i18n/switchers";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { t, locale } = useI18n();
+  const { currency } = useCurrency();
   const isLanding = pathname === "/";
   // Landing: topbar tersembunyi di hero, muncul saat scroll. Halaman lain: selalu terlihat.
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const visible = !isLanding || scrolled;
+
+  const LINKS = [
+    { href: "/#collection", label: t("common.nav.fleet") },
+    { href: "/#experience", label: t("site.nav.experience") },
+    { href: "/#modes", label: t("site.nav.waysToRide") },
+    { href: "/about", label: t("common.nav.about") },
+    { href: "/blog", label: t("common.nav.blog") },
+  ];
 
   useEffect(() => {
     if (!isLanding) return; // halaman non-landing tak butuh logika scroll
@@ -57,8 +63,12 @@ export function SiteHeader() {
               {l.label}
             </Link>
           ))}
+          <div className="i18n-switchers">
+            <LocaleSwitcher value={locale} className="i18n-select" />
+            <CurrencySwitcher value={currency} className="i18n-select" />
+          </div>
           <Link href="/#collection" className="btn btn-primary btn-sm">
-            Book Now
+            {t("common.nav.bookNow")}
           </Link>
         </nav>
 
@@ -95,8 +105,12 @@ export function SiteHeader() {
                   </Link>
                 </motion.div>
               ))}
+              <div className="i18n-switchers i18n-switchers--mobile">
+                <LocaleSwitcher value={locale} className="i18n-select" />
+                <CurrencySwitcher value={currency} className="i18n-select" />
+              </div>
               <Link href="/#collection" className="btn btn-primary" onClick={() => setOpen(false)}>
-                Book Now
+                {t("common.nav.bookNow")}
               </Link>
             </nav>
           </motion.div>

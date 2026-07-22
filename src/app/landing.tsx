@@ -1,6 +1,6 @@
 "use client";
 
-// Landing page — Editorial Noir, English, rich motion, fully responsive.
+// Landing page — Ivory & Gold (carlux-inspired), i18n, rich motion, fully responsive.
 // Data (plain, serializable) datang dari page.tsx (server) agar Prisma tak bocor ke client.
 
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +15,8 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import { formatIDR } from "@/ui/format";
+import { useI18n, Money } from "@/i18n/client";
+import { waLink } from "@/lib/site-config";
 import { Icon } from "@/ui/icons";
 import { Reveal, StaggerGroup, StaggerItem } from "@/ui/motion";
 import { BaliStory } from "@/ui/bali-story";
@@ -51,10 +52,12 @@ export function Landing({
   return (
     <>
       <Hero />
+      <UspStrip />
       <BrandMarquee brands={brands} />
+      <Collection cars={cars} categories={categories} brands={brands} />
+      <OffersBand />
       <Experience />
       <BaliStory />
-      <Collection cars={cars} categories={categories} brands={brands} />
       <HowItWorks />
       <Modes />
       <Testimonials />
@@ -70,6 +73,7 @@ export function Landing({
    bergantung JS. Parallax gambar (Framer) hanya enhancement; gambar tetap tampil bila
    JS/parallax tak jalan. */
 function Hero() {
+  const { t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -86,24 +90,20 @@ function Hero() {
       <div className="hero-content">
         <div className="container">
           <div className="hero-text">
-            <span className="kicker hero-anim">Luxury Car Rental · Bali</span>
+            <span className="kicker hero-anim">{t("site.hero.kicker")}</span>
             <h1 className="hero-title hero-anim">
-              The art
+              {t("site.hero.title1")}
               <br />
-              of arriving.
+              {t("site.hero.title2")}
             </h1>
             <div className="hero-rule hero-anim" />
-            <p className="muted hero-sub hero-anim">
-              A curated fleet of supercars, sedans, SUVs and premium MPVs. Choose{" "}
-              <strong>Self-Drive</strong> for the freedom of the road, or <strong>Chauffeur</strong>{" "}
-              for effortless luxury.
-            </p>
+            <p className="muted hero-sub hero-anim">{t("site.hero.sub")}</p>
             <div className="row hero-actions hero-anim">
               <Link href="#collection" className="btn btn-primary">
-                Explore the Fleet <Icon name="arrow" size={16} />
+                {t("site.hero.ctaPrimary")} <Icon name="arrow" size={16} />
               </Link>
               <Link href="#modes" className="btn">
-                Ways to Ride
+                {t("site.hero.ctaSecondary")}
               </Link>
             </div>
           </div>
@@ -111,8 +111,96 @@ function Hero() {
       </div>
 
       <div className="hero-scroll">
-        <span className="eyebrow">Scroll</span>
+        <span className="eyebrow">{t("site.hero.scroll")}</span>
         <span className="hero-scroll-line" />
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------- USP strip --------------------------- */
+function UspStrip() {
+  const { t } = useI18n();
+  return (
+    <section className="usp-strip">
+      <div className="container usp-grid">
+        <div className="usp-item">
+          <span className="usp-icon">
+            <Icon name="coin" size={20} />
+          </span>
+          <div>
+            <p className="usp-title">{t("site.usp.deposit.title")}</p>
+            <p className="muted usp-body">{t("site.usp.deposit.body")}</p>
+          </div>
+        </div>
+        <div className="usp-item">
+          <span className="usp-icon">
+            <Icon name="percent" size={20} />
+          </span>
+          <div>
+            <p className="usp-title">{t("site.usp.offers.title")}</p>
+            <p className="muted usp-body">{t("site.usp.offers.body")}</p>
+            <a
+              className="usp-cta"
+              href={waLink(t("site.usp.offers.cta"))}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("site.usp.offers.cta")} <Icon name="arrow" size={13} />
+            </a>
+          </div>
+        </div>
+        <div className="usp-item">
+          <span className="usp-icon">
+            <Icon name="mapPin" size={20} />
+          </span>
+          <div>
+            <p className="usp-title">{t("site.usp.delivery.title")}</p>
+            <p className="muted usp-body">{t("site.usp.delivery.body")}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------- Offers band ---------------------------- */
+const OFFER_CARDS = [
+  { icon: "percent" as const, title: "site.offers.card1.title", body: "site.offers.card1.body" },
+  { icon: "calendar" as const, title: "site.offers.card2.title", body: "site.offers.card2.body" },
+  { icon: "steering" as const, title: "site.offers.card3.title", body: "site.offers.card3.body" },
+];
+
+function OffersBand() {
+  const { t } = useI18n();
+  return (
+    <section className="offers-band">
+      <div className="offers-inner">
+        <div className="offers-copy">
+          <span className="kicker">{t("site.offers.kicker")}</span>
+          <h2 className="offers-title">{t("site.offers.title")}</h2>
+          <p className="muted">{t("site.offers.body")}</p>
+        </div>
+        <a
+          href={waLink(t("site.offers.cta"))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary"
+        >
+          {t("site.offers.cta")} <Icon name="arrow" size={16} />
+        </a>
+      </div>
+
+      <div className="offers-cards">
+        {OFFER_CARDS.map((c) => (
+          <div key={c.title} className="offers-card">
+            <span className="offers-card-icon">
+              <Icon name={c.icon} size={18} />
+            </span>
+            <h3 className="offers-card-title">{t(c.title)}</h3>
+            <p className="muted offers-card-body">{t(c.body)}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -137,28 +225,30 @@ function BrandMarquee({ brands }: { brands: string[] }) {
 }
 
 /* -------------------------- Experience -------------------------- */
-const FEATURES: { icon: Parameters<typeof Icon>[0]["name"]; title: string; body: string }[] = [
-  { icon: "shield", title: "Impeccable Fleet", body: "Every car detailed, serviced and insured before it reaches you." },
-  { icon: "calendar", title: "Seamless Booking", body: "Reserve online in minutes, with instant confirmation and secure payment." },
-  { icon: "steering", title: "Discreet Chauffeurs", body: "Professional drivers for weddings, events and executive travel." },
-  { icon: "clock", title: "24/7 Concierge", body: "A dedicated team on hand, from first enquiry to safe return." },
-];
+const FEATURE_ICONS: Parameters<typeof Icon>[0]["name"][] = ["shield", "calendar", "steering", "clock"];
+const FEATURE_KEYS = [
+  { title: "site.experience.feature1.title", body: "site.experience.feature1.body" },
+  { title: "site.experience.feature2.title", body: "site.experience.feature2.body" },
+  { title: "site.experience.feature3.title", body: "site.experience.feature3.body" },
+  { title: "site.experience.feature4.title", body: "site.experience.feature4.body" },
+] as const;
 
 function Experience() {
+  const { t } = useI18n();
   return (
     <section id="experience" className="section container">
       <Reveal>
-        <span className="eyebrow">Why Prestige</span>
-        <h2 className="section-title">An experience, not a transaction.</h2>
+        <span className="eyebrow">{t("site.experience.kicker")}</span>
+        <h2 className="section-title">{t("site.experience.title")}</h2>
       </Reveal>
       <StaggerGroup className="feature-grid">
-        {FEATURES.map((f) => (
+        {FEATURE_KEYS.map((f, i) => (
           <StaggerItem key={f.title} className="feature">
             <span className="feature-icon">
-              <Icon name={f.icon} size={22} />
+              <Icon name={FEATURE_ICONS[i]!} size={22} />
             </span>
-            <h3 className="feature-title">{f.title}</h3>
-            <p className="muted">{f.body}</p>
+            <h3 className="feature-title">{t(f.title)}</h3>
+            <p className="muted">{t(f.body)}</p>
           </StaggerItem>
         ))}
       </StaggerGroup>
@@ -176,6 +266,7 @@ function Collection({
   categories: { value: string; label: string }[];
   brands: string[];
 }) {
+  const { t } = useI18n();
   const [cat, setCat] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | null>(null);
   const filtered = cars.filter((c) => (!cat || c.category === cat) && (!brand || c.brand === brand));
@@ -185,13 +276,13 @@ function Collection({
       <Reveal>
         <div className="section-head">
           <div>
-            <span className="eyebrow">The Collection</span>
+            <span className="eyebrow">{t("site.collection.kicker")}</span>
             <h2 className="section-title" style={{ margin: "0.4rem 0 0" }}>
-              Choose your drive.
+              {t("site.collection.title")}
             </h2>
           </div>
           <span className="muted" style={{ fontSize: "0.85rem" }}>
-            {filtered.length} available
+            {filtered.length} {t("site.collection.available")}
           </span>
         </div>
       </Reveal>
@@ -201,9 +292,9 @@ function Collection({
       <Reveal delay={0.05}>
         <div className="filters">
           <div className="filter-row">
-            <span className="eyebrow">Category</span>
+            <span className="eyebrow">{t("site.collection.categoryLabel")}</span>
             <div className="chips">
-              <Chip active={!cat} onClick={() => setCat(null)}>All</Chip>
+              <Chip active={!cat} onClick={() => setCat(null)}>{t("site.collection.all")}</Chip>
               {categories.map((c) => (
                 <Chip key={c.value} active={cat === c.value} onClick={() => setCat(c.value)}>
                   {c.label}
@@ -212,9 +303,9 @@ function Collection({
             </div>
           </div>
           <div className="filter-row">
-            <span className="eyebrow">Marque</span>
+            <span className="eyebrow">{t("site.collection.marqueLabel")}</span>
             <div className="chips">
-              <Chip active={!brand} onClick={() => setBrand(null)}>All</Chip>
+              <Chip active={!brand} onClick={() => setBrand(null)}>{t("site.collection.all")}</Chip>
               {brands.map((b) => (
                 <Chip key={b} active={brand === b} onClick={() => setBrand(b)}>
                   {b}
@@ -236,7 +327,7 @@ function Collection({
 
       {filtered.length === 0 ? (
         <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>
-          No cars match those filters.
+          {t("site.collection.noMatch")}
         </p>
       ) : null}
     </section>
@@ -246,6 +337,7 @@ function Collection({
 /* Showcase sinematik: slideshow 1 mobil/slide, auto-advance + crossfade + ken-burns,
    kontrol (panah/dot), pause saat hover, reveal saat masuk layar. */
 function FleetShowcase({ cars }: { cars: CarCard[] }) {
+  const { t } = useI18n();
   const slides = cars.filter((c) => c.photo);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -253,8 +345,8 @@ function FleetShowcase({ cars }: { cars: CarCard[] }) {
 
   useEffect(() => {
     if (paused || reduce || slides.length < 2) return;
-    const t = setInterval(() => setI((v) => (v + 1) % slides.length), 5200);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setI((v) => (v + 1) % slides.length), 5200);
+    return () => clearInterval(timer);
   }, [paused, reduce, slides.length]);
 
   if (slides.length === 0) return null;
@@ -303,18 +395,26 @@ function FleetShowcase({ cars }: { cars: CarCard[] }) {
             <div className="showcase-rate">
               {active.dailyRate != null ? (
                 <>
-                  <span className="price">{formatIDR(active.dailyRate)}</span>{" "}
-                  <span className="price-unit">/ day · Self-Drive</span>
+                  <span className="price">
+                    <Money idr={active.dailyRate} />
+                  </span>{" "}
+                  <span className="price-unit">
+                    {t("common.perDay")} · {t("common.mode.selfDrive")}
+                  </span>
                 </>
               ) : active.chauffeurPackage != null ? (
                 <>
-                  <span className="price">{formatIDR(active.chauffeurPackage)}</span>{" "}
-                  <span className="price-unit">/ 12h · Chauffeur</span>
+                  <span className="price">
+                    <Money idr={active.chauffeurPackage} />
+                  </span>{" "}
+                  <span className="price-unit">
+                    {t("common.per12h")} · {t("common.mode.chauffeur")}
+                  </span>
                 </>
               ) : null}
             </div>
             <Link href={`/mobil/${active.id}`} className="btn btn-primary">
-              View details <Icon name="arrow" size={16} />
+              {t("common.cta.viewDetails")} <Icon name="arrow" size={16} />
             </Link>
           </motion.div>
         </div>
@@ -358,6 +458,7 @@ function Chip({
 }
 
 function CarTile({ car }: { car: CarCard }) {
+  const { t } = useI18n();
   return (
     <Link href={`/mobil/${car.id}`} className="car-tile">
       <div className="car-media">
@@ -378,31 +479,35 @@ function CarTile({ car }: { car: CarCard }) {
           </span>
         </div>
         <p className="muted car-spec">
-          {car.transmission} · {car.seats} seats
+          {car.transmission} · {car.seats} {t("common.seats")}
         </p>
         <hr className="divider" style={{ margin: "1rem 0" }} />
         <div className="car-rates">
           {car.dailyRate != null ? (
             <div className="rate">
-              <span className="eyebrow">Self-Drive</span>
+              <span className="eyebrow">{t("common.mode.selfDrive")}</span>
               <span>
-                <span className="price">{formatIDR(car.dailyRate)}</span>{" "}
-                <span className="price-unit">/ day</span>
+                <span className="price">
+                  <Money idr={car.dailyRate} />
+                </span>{" "}
+                <span className="price-unit">{t("common.perDay")}</span>
               </span>
             </div>
           ) : null}
           {car.chauffeurPackage != null ? (
             <div className="rate">
-              <span className="eyebrow">Chauffeur</span>
+              <span className="eyebrow">{t("common.mode.chauffeur")}</span>
               <span>
-                <span className="price">{formatIDR(car.chauffeurPackage)}</span>{" "}
-                <span className="price-unit">/ 12h</span>
+                <span className="price">
+                  <Money idr={car.chauffeurPackage} />
+                </span>{" "}
+                <span className="price-unit">{t("common.per12h")}</span>
               </span>
             </div>
           ) : null}
         </div>
         <span className="car-cta">
-          View details <Icon name="arrow" size={15} />
+          {t("common.cta.viewDetails")} <Icon name="arrow" size={15} />
         </span>
       </div>
     </Link>
@@ -411,27 +516,28 @@ function CarTile({ car }: { car: CarCard }) {
 
 /* ---------------------------- Modes ----------------------------- */
 function Modes() {
+  const { t } = useI18n();
   const modes = [
     {
       icon: "key" as const,
-      tag: "Self-Drive",
-      title: "Take the wheel.",
-      body: "Full freedom of the road. Verified licence, refundable deposit, transparent mileage.",
+      tag: t("common.mode.selfDrive"),
+      title: t("site.modes.selfDrive.title"),
+      body: t("site.modes.selfDrive.body"),
       img: "https://images.unsplash.com/photo-1544218159-ee555140c5b0?auto=format&fit=crop&w=1200&q=75",
     },
     {
       icon: "steering" as const,
-      tag: "Chauffeur",
-      title: "Be driven.",
-      body: "A professional driver for weddings, events and executive travel. Sit back and arrive in style.",
+      tag: t("common.mode.chauffeur"),
+      title: t("site.modes.chauffeur.title"),
+      body: t("site.modes.chauffeur.body"),
       img: "https://images.unsplash.com/photo-1603658313849-58e9848fbf29?auto=format&fit=crop&w=1200&q=75",
     },
   ];
   return (
     <section id="modes" className="section container">
       <Reveal>
-        <span className="eyebrow">Two Ways to Ride</span>
-        <h2 className="section-title">However you wish to arrive.</h2>
+        <span className="eyebrow">{t("site.modes.kicker")}</span>
+        <h2 className="section-title">{t("site.modes.title")}</h2>
       </Reveal>
       <div className="modes-grid">
         {modes.map((m, i) => (
@@ -456,11 +562,12 @@ function Modes() {
 
 /* ---------------------------- Stats ----------------------------- */
 function Stats({ carCount, brandCount }: { carCount: number; brandCount: number }) {
+  const { t } = useI18n();
   const stats = [
-    { value: brandCount, suffix: "", label: "Marques" },
-    { value: Math.max(carCount, 6), suffix: "+", label: "Vehicles" },
-    { value: 24, suffix: "/7", label: "Concierge" },
-    { value: 100, suffix: "%", label: "Insured" },
+    { value: brandCount, suffix: "", label: t("site.stats.marques") },
+    { value: Math.max(carCount, 6), suffix: "+", label: t("site.stats.vehicles") },
+    { value: 24, suffix: "/7", label: t("site.stats.concierge") },
+    { value: 100, suffix: "%", label: t("site.stats.insured") },
   ];
   return (
     <section className="stats-band">
@@ -503,17 +610,16 @@ function Counter({ value, suffix, label }: { value: number; suffix: string; labe
 
 /* --------------------------- Final CTA -------------------------- */
 function FinalCTA() {
+  const { t } = useI18n();
   return (
     <section className="cta-band">
       <div className="container">
         <Reveal className="cta-inner">
-          <span className="kicker">Ready when you are</span>
-          <h2 className="cta-title">Reserve your drive.</h2>
-          <p className="muted cta-sub">
-            Browse the collection and book in minutes — instant confirmation, secure payment.
-          </p>
+          <span className="kicker">{t("site.finalCta.kicker")}</span>
+          <h2 className="cta-title">{t("site.finalCta.title")}</h2>
+          <p className="muted cta-sub">{t("site.finalCta.sub")}</p>
           <Link href="#collection" className="btn btn-primary">
-            Explore the Fleet <Icon name="arrow" size={16} />
+            {t("site.finalCta.cta")} <Icon name="arrow" size={16} />
           </Link>
         </Reveal>
       </div>

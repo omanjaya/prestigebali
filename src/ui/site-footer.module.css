@@ -1,4 +1,4 @@
-/* Rich multi-column footer — Warm Noir. Restrained, matte gold used sparingly. */
+/* Rich multi-column footer — Ivory & Gold. Restrained, matte gold used sparingly. */
 
 .footer {
   position: relative;
@@ -7,7 +7,7 @@
   background:
     radial-gradient(
       120% 80% at 50% 0%,
-      rgba(198, 160, 82, 0.05),
+      rgba(168, 132, 44, 0.06),
       transparent 60%
     ),
     var(--surface);

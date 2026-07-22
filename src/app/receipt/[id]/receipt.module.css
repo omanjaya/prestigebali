@@ -221,6 +221,101 @@
   font-style: italic;
 }
 
+/* ---- Security deposit — deliberately separate from the "Total paid" rental sum;
+   deposit is not revenue, so it gets its own visually distinct block. ---- */
+.depositHeld {
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  border: 1px dashed var(--gold-soft);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--gold) 6%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+}
+.depositHeldLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.depositHeldAmount {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.depositHeldNote {
+  flex-basis: 100%;
+  margin: 0.15rem 0 0;
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+
+/* ---- Rental Agreement — bilingual (EN/ID) terms + two-column signature block. ---- */
+.agreement {
+  margin-top: 0.5rem;
+}
+.agreementList {
+  list-style: decimal;
+  margin: 0.9rem 0 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.agreementList li {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.agreementEn {
+  display: block;
+  color: var(--ink);
+}
+.agreementId {
+  display: block;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
+.signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+}
+@media (max-width: 520px) {
+  .signatures {
+    grid-template-columns: 1fr;
+  }
+}
+.sigBlock {
+  display: flex;
+  flex-direction: column;
+}
+.sigLine {
+  height: 1px;
+  background: var(--ink-faint);
+  margin-bottom: 0.5rem;
+  margin-top: 2.75rem;
+}
+.sigLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.sigName {
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
 /* ---- Footer ---- */
 .foot {
   margin-top: 2.25rem;
