@@ -18,7 +18,6 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import type { BookingView } from "@/lib/bookings";
-import type { UnitView } from "@/lib/units";
 import type { BookingStatus } from "@/domain/booking/booking";
 import { formatIDR, formatWIB, MODE_LABEL, STATUS_LABEL, statusBadgeClass } from "@/ui/format";
 import { bookingActionWithState, type BookingActionState } from "./actions";
@@ -63,15 +62,12 @@ function dpTotalLabel(b: BookingView): string {
 
 export function BookingsTable({
   bookings,
-  units = {},
   q,
   status,
   counts,
   allCount,
 }: {
   bookings: BookingView[];
-  /** Unit per Mobil (carModelId → UnitView[]), untuk pilihan di form Alokasi. */
-  units?: Record<string, UnitView[]>;
   /** Query pencarian aktif dari URL (?q=) — dipertahankan saat pindah tab. */
   q?: string;
   /** Status aktif dari URL (?status=) — undefined berarti tab "All". */
@@ -142,7 +138,7 @@ export function BookingsTable({
                     {b.status === "AWAITING_APPROVAL" ? (
                       <VerificationInfo booking={b} />
                     ) : null}
-                    <RowActions booking={b} units={units[b.carModelId] ?? []} />
+                    <RowActions booking={b} />
                   </td>
                 </tr>
               ))}
@@ -189,7 +185,7 @@ export function BookingsTable({
             </dl>
             {b.status === "AWAITING_APPROVAL" ? <VerificationInfo booking={b} /> : null}
             <div className="bt-card-actions">
-              <RowActions booking={b} units={units[b.carModelId] ?? []} className="" />
+              <RowActions booking={b} className="" />
             </div>
           </div>
         ))}
@@ -242,11 +238,9 @@ const INITIAL_ACTION_STATE: BookingActionState = {};
  */
 function RowActions({
   booking: b,
-  units,
   className = "admin-actions-row",
 }: {
   booking: BookingView;
-  units: UnitView[];
   className?: string;
 }) {
   const [state, formAction, pending] = useActionState(bookingActionWithState, INITIAL_ACTION_STATE);
@@ -265,61 +259,43 @@ function RowActions({
       </div>
     ) : null;
 
+  // RAMPING (anti-berantakan): dashboard hanya memuat SATU aksi utama kontekstual
+  // per status + Detail (+ Cancel bila relevan). Aksi lengkap — alokasi unit,
+  // handover, receipt, chat — hidup di halaman Detail booking, bukan ditumpuk
+  // di sel tabel.
+  const primary =
+    b.status === "AWAITING_APPROVAL" && b.verificationSubmittedAt ? (
+      <form action={formAction}>
+        <input type="hidden" name="intent" value="approve" />
+        <input type="hidden" name="bookingId" value={b.id} />
+        <button type="submit" className="btn btn-sm btn-primary" disabled={pending}>
+          Approve
+        </button>
+      </form>
+    ) : b.status === "CONFIRMED" ? (
+      <form action={formAction}>
+        <input type="hidden" name="intent" value="ongoing" />
+        <input type="hidden" name="bookingId" value={b.id} />
+        <button type="submit" className="btn btn-sm btn-primary" disabled={pending}>
+          Mark Ongoing
+        </button>
+      </form>
+    ) : b.status === "ONGOING" ? (
+      <form action={formAction}>
+        <input type="hidden" name="intent" value="completed" />
+        <input type="hidden" name="bookingId" value={b.id} />
+        <button type="submit" className="btn btn-sm btn-primary" disabled={pending}>
+          Mark Completed
+        </button>
+      </form>
+    ) : null;
+
   const buttons = (
     <>
+      {primary}
       <Link href={`/admin/bookings/${b.id}`} className="btn btn-sm btn-ghost">
         Detail
       </Link>
-      {b.status === "AWAITING_APPROVAL" && b.verificationSubmittedAt ? (
-        <form action={formAction}>
-          <input type="hidden" name="intent" value="approve" />
-          <input type="hidden" name="bookingId" value={b.id} />
-          <button type="submit" className="btn btn-sm btn-primary" disabled={pending}>
-            Approve
-          </button>
-        </form>
-      ) : null}
-      {["CONFIRMED", "ONGOING"].includes(b.status) ? (
-        <form
-          action={formAction}
-          className="row"
-          style={{ gap: "0.35rem", alignItems: "center", flexWrap: "nowrap" }}
-        >
-          <input type="hidden" name="intent" value="allocate" />
-          <input type="hidden" name="bookingId" value={b.id} />
-          <select name="unitId" defaultValue={b.allocatedUnitId ?? ""} style={{ maxWidth: 160 }}>
-            <option value="" disabled>
-              Select unit…
-            </option>
-            {units.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.color} · {u.plate}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="btn btn-sm" disabled={pending}>
-            {b.allocatedUnitId ? "Reassign" : "Allocate"}
-          </button>
-        </form>
-      ) : null}
-      {b.status === "CONFIRMED" ? (
-        <form action={formAction}>
-          <input type="hidden" name="intent" value="ongoing" />
-          <input type="hidden" name="bookingId" value={b.id} />
-          <button type="submit" className="btn btn-sm" disabled={pending}>
-            Mark Ongoing
-          </button>
-        </form>
-      ) : null}
-      {b.status === "ONGOING" ? (
-        <form action={formAction}>
-          <input type="hidden" name="intent" value="completed" />
-          <input type="hidden" name="bookingId" value={b.id} />
-          <button type="submit" className="btn btn-sm" disabled={pending}>
-            Mark Completed
-          </button>
-        </form>
-      ) : null}
       {["REQUESTED", "CONFIRMED", "AWAITING_APPROVAL"].includes(b.status) ? (
         <form action={formAction}>
           <input type="hidden" name="intent" value="cancel" />
@@ -329,15 +305,10 @@ function RowActions({
           </ConfirmButton>
         </form>
       ) : null}
-      {["CONFIRMED", "ONGOING", "COMPLETED"].includes(b.status) ? (
-        <Link href={`/admin/handover/${b.id}`} className="btn btn-sm btn-ghost">
-          Handover
-        </Link>
-      ) : null}
-      {b.dpAmount != null ? (
-        <Link href={`/receipt/${b.id}`} className="btn btn-sm btn-ghost">
-          Receipt
-        </Link>
+      {b.status === "CONFIRMED" && !b.allocatedUnitId ? (
+        <span className="muted" style={{ fontSize: "0.72rem", whiteSpace: "nowrap" }}>
+          unit belum dialokasikan
+        </span>
       ) : null}
     </>
   );

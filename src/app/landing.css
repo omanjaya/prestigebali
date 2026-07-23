@@ -1154,6 +1154,13 @@ html.lenis body {
 .admin-side-link.is-active svg {
   color: var(--accent);
 }
+/* Navigasi keyboard: fokus harus terlihat (a11y). */
+.admin-side-link:focus-visible,
+.admin-burger:focus-visible,
+.admin-side-foot .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .admin-side-badge {
   margin-left: auto;

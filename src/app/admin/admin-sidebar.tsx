@@ -4,7 +4,7 @@
 // grup menu berikon; mobile (<940px): topbar + drawer overlay. Active link via
 // pathname. Menggantikan AdminNav (top bar) lama.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -65,8 +65,14 @@ function NavContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  // Halaman tanpa entri menu sendiri (detail booking, handover) dianggap bagian
+  // Dashboard agar admin tidak kehilangan orientasi di sidebar.
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    href === "/admin"
+      ? pathname === "/admin" ||
+        pathname.startsWith("/admin/bookings") ||
+        pathname.startsWith("/admin/handover")
+      : pathname.startsWith(href);
 
   return (
     <>
@@ -80,12 +86,14 @@ function NavContent({
             <span className="admin-side-group-label">{g.label}</span>
             {g.links.map((l) => {
               const n = l.badge ? (badges?.[l.badge] ?? 0) : 0;
+              const active = isActive(l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
                   onClick={onNavigate}
-                  className={isActive(l.href) ? "admin-side-link is-active" : "admin-side-link"}
+                  aria-current={active ? "page" : undefined}
+                  className={active ? "admin-side-link is-active" : "admin-side-link"}
                 >
                   <Icon name={l.icon} size={17} />
                   {l.label}
@@ -121,6 +129,21 @@ export function AdminSidebar({
   badges?: SidebarBadges;
 }) {
   const [open, setOpen] = useState(false);
+
+  // Drawer mobile: kunci scroll body saat terbuka + tutup dengan tombol Escape.
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   return (
     <>

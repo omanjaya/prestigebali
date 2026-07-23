@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import { listBookings, searchBookings, type BookingView } from "@/lib/bookings";
-import { listAllUnits, type UnitView } from "@/lib/units";
 import type { BookingStatus } from "@/domain/booking/booking";
 import { Container } from "@/ui/primitives";
 import { Icon } from "@/ui/icons";
@@ -79,16 +78,10 @@ export default async function AdminPage({
   // kartu ringkasan tetap menunjukkan gambaran keseluruhan meski admin sedang mencari
   // atau memfilter tabel di bawahnya. Tabel bookingnya sendiri (rows) datang dari
   // searchBookings() terpisah, yang baru menerapkan q/status/pagination.
-  const [kpiBookings, allUnits, search] = await Promise.all([
+  const [kpiBookings, search] = await Promise.all([
     listBookings(),
-    listAllUnits(),
     searchBookings({ q: q || undefined, status, page, pageSize: PAGE_SIZE }),
   ]);
-
-  const unitsByModel = allUnits.reduce<Record<string, UnitView[]>>((map, u) => {
-    (map[u.carModelId] ??= []).push(u);
-    return map;
-  }, {});
 
   const revenue = kpiBookings
     .filter(isRevenueBearing)
@@ -164,31 +157,50 @@ export default async function AdminPage({
       ) : null}
 
       <div className="reveal" id="bookings">
+        {/* Toolbar satu baris: judul+jumlah menyatu di kiri, pencarian kompak di
+            kanan — menggantikan label "CARI" & "N TOTAL" yang dulu mengambang. */}
         <div
           className="row"
-          style={{ justifyContent: "space-between", alignItems: "baseline", marginBottom: "1rem" }}
+          style={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "0.75rem 1.25rem",
+            marginBottom: "1rem",
+          }}
         >
-          <h2 style={{ margin: 0 }}>Bookings</h2>
-          <span className="eyebrow">{total} total</span>
+          <h2 style={{ margin: 0 }}>
+            Bookings{" "}
+            <span className="muted" style={{ fontSize: "0.85rem", fontWeight: 500 }}>
+              · {total}
+            </span>
+          </h2>
+          <form
+            method="GET"
+            className="row"
+            style={{ gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}
+          >
+            <input type="hidden" name="status" value={status ?? ""} />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              placeholder="Cari kode / nama / HP…"
+              aria-label="Cari booking"
+              style={{ width: "min(300px, 70vw)" }}
+            />
+            <button type="submit" className="btn btn-sm btn-primary">
+              Search
+            </button>
+            {q ? (
+              <Link href="/admin#bookings" className="btn btn-sm btn-ghost">
+                Reset
+              </Link>
+            ) : null}
+          </form>
         </div>
-
-        <form method="GET" className="admin-filter-bar" style={{ marginBottom: "1rem" }}>
-          <input type="hidden" name="status" value={status ?? ""} />
-          <label style={{ flex: "1 1 220px" }}>
-            Cari
-            <input type="text" name="q" defaultValue={q} placeholder="Cari kode / nama / HP…" />
-          </label>
-          <button type="submit" className="btn btn-sm btn-primary">
-            Search
-          </button>
-          <Link href="/admin#bookings" className="btn btn-sm btn-ghost">
-            Reset
-          </Link>
-        </form>
 
         <BookingsTable
           bookings={rows}
-          units={unitsByModel}
           q={q || undefined}
           status={status}
           counts={tabCounts}

@@ -59,9 +59,12 @@ export default async function RootLayout({
     <html lang={locale} className={`${display.variable} ${body.variable}`}>
       <body>
         <I18nProvider locale={locale} currency={currency} messages={messages} rates={rates}>
-          <SmoothScroll />
-          <CustomCursor />
+          {/* Kursor custom & smooth-scroll hanya untuk situs pelanggan — di admin
+              (alat kerja) keduanya justru mengganggu: kursor ring menutupi data,
+              Lenis membuat scroll tabel terasa melayang. */}
           <HideOnAdmin>
+            <SmoothScroll />
+            <CustomCursor />
             <SiteHeader />
           </HideOnAdmin>
           <main>{children}</main>
