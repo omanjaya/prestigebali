@@ -73,7 +73,7 @@ export default async function BookingDetailPage({
     booking.status === "CONFIRMED";
 
   return (
-    <Container style={{ padding: "2.5rem 0 4rem" }}>
+    <Container style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
       <style>{`
         .bk-grid {
           display: grid;

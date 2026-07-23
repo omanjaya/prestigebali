@@ -111,7 +111,9 @@ export default async function AdminPage({
   }
 
   return (
-    <Container style={{ padding: "2.5rem 0 4rem" }}>
+    // Longhand (bukan shorthand "2.5rem 0 4rem") agar gutter kiri-kanan dari
+    // .admin-shell .container tidak tertimpa inline padding-horizontal 0.
+    <Container style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
       <div className="reveal" style={{ marginBottom: "2rem" }}>
         <span className="kicker">Overview</span>
         <h1 style={{ margin: "0.6rem 0 0.3rem" }}>Dashboard</h1>

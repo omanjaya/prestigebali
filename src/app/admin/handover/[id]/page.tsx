@@ -21,7 +21,7 @@ export default async function HandoverAdminPage({
 
   if (!booking) {
     return (
-      <Container style={{ padding: "3rem 0" }}>
+      <Container style={{ paddingTop: "3rem", paddingBottom: "3rem" }}>
         <span className="kicker">Admin · Serah Terima</span>
         <h1>Booking tidak ditemukan</h1>
         <p className="muted">Tidak ada booking dengan id “{id}”.</p>
@@ -39,7 +39,7 @@ export default async function HandoverAdminPage({
   const newDamage = inn?.damageNotes && inn.damageNotes !== out?.damageNotes;
 
   return (
-    <Container style={{ padding: "2.5rem 0 4rem" }}>
+    <Container style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
       <style>{`
         @media (max-width: 640px) {
           .ho-submit {

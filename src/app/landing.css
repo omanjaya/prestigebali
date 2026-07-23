@@ -1417,8 +1417,9 @@ html.lenis body {
    label kecil fungsional — admin tidak butuh gaya editorial pelanggan. */
 .admin-shell .container {
   max-width: none;
-  padding-left: clamp(1rem, 2vw, 2rem);
-  padding-right: clamp(1rem, 2vw, 2rem);
+  /* Napas dari sidebar: gutter kiri-kanan lebih lega di layar lebar. */
+  padding-left: clamp(1.5rem, 3.5vw, 3.5rem);
+  padding-right: clamp(1.5rem, 3.5vw, 3.5rem);
 }
 .admin-shell .table th,
 .admin-shell .table td {
